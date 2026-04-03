@@ -14,6 +14,10 @@ type Config struct {
 	WriteTimeout time.Duration `env:"WRITE_TIMEOUT" envDefault:"30s"`
 	ReadTimeout  time.Duration `env:"READ_TIMEOUT" envDefault:"10s"`
 	IdleTimeout  time.Duration `env:"IDLE_TIMEOUT" envDefault:"60s"`
+	RedisHost    string        `env:"REDIS_HOST" envDefault:"redis"`
+	RedisPort    int           `env:"REDIS_PORT" envDefault:"6380"`
+	RedisPwd     string        `env:"REDIS_PASSWORD" envDefault:""`
+	RedisFamily  int           `env:"REDIS_FAMILY" envDefault:"0"`
 }
 
 func Load() (*Config, error) {

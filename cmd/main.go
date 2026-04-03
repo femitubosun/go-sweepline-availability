@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	"github.com/femitubosun/go-sweepline-availability/internal/config"
+	"github.com/femitubosun/go-sweepline-availability/internal/redis"
 )
 
 func main() {
@@ -23,7 +24,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	api := NewApp(cfg, logger)
+	cache, err := redis.NewCache(cfg)
+	if err != nil {
+		logger.Error("failed to connect to redis", "err", err)
+	}
+
+	logger.Info("redis connected 🚀")
+
+	api := NewApp(cfg, cache, logger)
 
 	if err := api.run(ctx, api.mount()); err != nil {
 		logger.Error("error", "err", err)
