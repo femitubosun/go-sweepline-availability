@@ -8,16 +8,30 @@ import (
 	"time"
 
 	"github.com/femitubosun/go-sweepline-availability/internal/config"
+	"github.com/femitubosun/go-sweepline-availability/internal/location"
 )
 
 type app struct {
-	config *config.Config
-	logger *slog.Logger
+	config   *config.Config
+	logger   *slog.Logger
+	services services
+}
+
+type services struct {
+	location location.Service
 }
 
 func (a *app) mount() http.Handler {
+	mux := http.NewServeMux()
 
-	return nil
+	mux.HandleFunc("GET /api/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("OK"))
+	})
+
+	a.registerStaticRoute(mux)
+	a.registerLocationRoutes(mux)
+
+	return mux
 }
 
 func (a *app) run(ctx context.Context, h http.Handler) error {
@@ -42,7 +56,7 @@ func (a *app) run(ctx context.Context, h http.Handler) error {
 	case err := <-errChan:
 		return err
 	case <-ctx.Done():
-		a.logger.Info("shuttdin down server...")
+		a.logger.Info("shutting down server...")
 	}
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -52,5 +66,7 @@ func (a *app) run(ctx context.Context, h http.Handler) error {
 }
 
 func NewApp(cfg *config.Config, logger *slog.Logger) *app {
-	return &app{config: cfg, logger: logger}
+	return &app{config: cfg, logger: logger, services: services{
+		location: location.NewService(),
+	}}
 }

@@ -1,0 +1,1511 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Tesla Supercharge Live Board</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            :root {
+                --bg: #0b0b0d;
+                --bg-soft: #121216;
+                --panel: #17181d;
+                --panel-2: #1d1f26;
+                --line: #2a2d36;
+                --text: #f5f7fb;
+                --muted: #9aa2b2;
+                --accent: #e82127;
+                --ok: #35d07f;
+                --warn: #f2b743;
+                --off: #8791a0;
+            }
+
+            * {
+                box-sizing: border-box;
+            }
+
+            html,
+            body {
+                margin: 0;
+                min-height: 100%;
+            }
+
+            body {
+                font-family: "Manrope", sans-serif;
+                color: var(--text);
+                background:
+                    radial-gradient(
+                        circle at 10% -8%,
+                        #252833 0%,
+                        transparent 36%
+                    ),
+                    linear-gradient(180deg, var(--bg) 0%, #09090b 100%);
+            }
+
+            .backdrop {
+                position: fixed;
+                inset: 0;
+                pointer-events: none;
+                background: linear-gradient(
+                    to bottom,
+                    rgba(255, 255, 255, 0.03),
+                    transparent 24%
+                );
+            }
+
+            .site-header,
+            .container {
+                width: min(1220px, 94vw);
+                margin: 0 auto;
+                position: relative;
+                z-index: 1;
+            }
+
+            .site-header {
+                padding: 18px 0 10px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+            }
+
+            .header-actions {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-weight: 700;
+                letter-spacing: 0.01em;
+            }
+
+            .brand-dot {
+                width: 11px;
+                height: 11px;
+                border-radius: 999px;
+                background: var(--accent);
+                box-shadow: 0 0 20px rgba(232, 33, 39, 0.6);
+            }
+
+            .status-chip {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 7px 11px;
+                border-radius: 999px;
+                border: 1px solid #2f323c;
+                background: #14151a;
+                font-size: 0.8rem;
+                color: #c5ccd8;
+            }
+
+            .theme-toggle {
+                border: 1px solid #3b404d;
+                background: #14161d;
+                color: #d7deea;
+                border-radius: 999px;
+                padding: 7px 11px;
+                font-family: inherit;
+                font-size: 0.8rem;
+                font-weight: 700;
+                cursor: pointer;
+            }
+
+            .pulse {
+                width: 8px;
+                height: 8px;
+                border-radius: 999px;
+                background: var(--accent);
+                animation: pulse 1.8s ease-in-out infinite;
+            }
+
+            .container {
+                padding: 8px 0 24px;
+            }
+
+            .panel {
+                background: var(--panel);
+                border: 1px solid var(--line);
+                border-radius: 16px;
+                box-shadow: 0 18px 30px rgba(0, 0, 0, 0.35);
+            }
+
+            .board-stage {
+                padding: 20px;
+                min-height: calc(100vh - 96px);
+                display: flex;
+                flex-direction: column;
+                gap: 14px;
+            }
+
+            .board-head {
+                display: grid;
+                grid-template-columns: 1.5fr 1fr;
+                gap: 14px;
+                align-items: end;
+            }
+
+            .eyebrow {
+                margin: 0;
+                font-size: 0.72rem;
+                letter-spacing: 0.11em;
+                text-transform: uppercase;
+                color: #8a93a6;
+                font-weight: 700;
+            }
+
+            h1 {
+                margin: 8px 0 0;
+                font-size: clamp(2rem, 4.4vw, 3.3rem);
+                line-height: 1;
+                font-weight: 800;
+            }
+
+            .lead {
+                margin: 8px 0 0;
+                color: var(--muted);
+                font-size: 0.94rem;
+            }
+
+            .hero-actions {
+                margin-top: 12px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .btn {
+                border: 0;
+                border-radius: 9px;
+                padding: 8px 12px;
+                font-family: inherit;
+                font-size: 0.82rem;
+                font-weight: 700;
+                cursor: pointer;
+            }
+
+            .btn-primary {
+                background: var(--accent);
+                color: #fff;
+            }
+
+            .btn-ghost {
+                background: transparent;
+                color: #d5dbe5;
+                border: 1px solid #3a3f4b;
+            }
+
+            .kpis {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 10px;
+            }
+
+            .kpis article {
+                border: 1px solid #313542;
+                border-radius: 12px;
+                padding: 12px;
+                background: var(--bg-soft);
+            }
+
+            .kpi-value {
+                margin: 0;
+                font-size: 1.45rem;
+                font-weight: 800;
+            }
+
+            .kpi-label {
+                margin: 4px 0 0;
+                font-size: 0.8rem;
+                color: var(--muted);
+            }
+
+            .helper-strip {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 10px;
+            }
+
+            .helper-card {
+                border: 1px solid #313542;
+                border-radius: 10px;
+                padding: 10px;
+                background: #14161c;
+            }
+
+            .helper-card h3 {
+                margin: 0;
+                font-size: 0.82rem;
+                color: #d9dfea;
+            }
+
+            .helper-card p {
+                margin: 6px 0 0;
+                font-size: 0.77rem;
+                color: var(--muted);
+                line-height: 1.4;
+            }
+
+            .board-layout {
+                flex: 1;
+                min-height: 0;
+                display: grid;
+                grid-template-columns: 2.4fr 1fr;
+                gap: 14px;
+            }
+
+            .station-overview {
+                border: 1px solid #343947;
+                border-radius: 14px;
+                background: linear-gradient(180deg, #14171f 0%, #101219 100%);
+                padding: 16px;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .station-meta {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 10px;
+            }
+
+            .station-meta > div,
+            .pulse-item {
+                border: 1px solid #323846;
+                border-radius: 10px;
+                padding: 9px 10px;
+                background: #171a22;
+            }
+
+            .meta-label {
+                margin: 0;
+                font-size: 0.76rem;
+                color: var(--muted);
+            }
+
+            .meta-value {
+                margin: 6px 0 0;
+                font-size: 0.9rem;
+                font-weight: 700;
+            }
+
+            .legend-row {
+                margin-top: 12px;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .legend {
+                border-radius: 999px;
+                padding: 5px 10px;
+                font-size: 0.73rem;
+                font-weight: 700;
+                border: 1px solid #323846;
+                background: #171a22;
+                color: #d7dce7;
+            }
+
+            .legend-available {
+                color: #8ce7bc;
+            }
+            .legend-occupied {
+                color: #ffb6b0;
+            }
+            .legend-degraded {
+                color: #ffd98f;
+            }
+            .legend-offline {
+                color: #c4ccd8;
+            }
+            .legend-held {
+                color: #9cc7ff;
+            }
+            .legend-starting {
+                color: #8ce7bc;
+            }
+
+            .stall-grid {
+                margin-top: 12px;
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 12px;
+                flex: 1;
+            }
+
+            .stall {
+                border: 1px solid #353c4d;
+                border-radius: 12px;
+                background: #171b23;
+                padding: 12px;
+                min-height: 142px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+
+            .state-held {
+                border-color: #2f4d74;
+            }
+
+            .state-starting {
+                border-color: #2b5a4a;
+            }
+
+            .stall-top {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+            }
+
+            .stall h3 {
+                margin: 0;
+                font-size: 1.05rem;
+            }
+
+            .stall p {
+                margin: 8px 0 0;
+                color: var(--muted);
+                font-size: 0.86rem;
+            }
+
+            .stall-meta-row {
+                margin-top: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                font-size: 0.75rem;
+                color: #bcc6d6;
+                font-weight: 700;
+            }
+
+            .stall-meter {
+                margin-top: 7px;
+                width: 100%;
+                height: 6px;
+                border-radius: 999px;
+                background: #293143;
+                overflow: hidden;
+            }
+
+            .stall-meter span {
+                display: block;
+                height: 100%;
+                border-radius: 999px;
+                background: linear-gradient(90deg, #6ca7ff 0%, #95e9c3 100%);
+            }
+
+            .stall-icon {
+                width: 10px;
+                height: 10px;
+                border-radius: 999px;
+                display: inline-block;
+                background: #6f7d94;
+            }
+
+            .stall-icon.state-available,
+            .stall-icon.state-starting {
+                background: var(--ok);
+            }
+            .stall-icon.state-occupied {
+                background: var(--busy);
+            }
+            .stall-icon.state-degraded,
+            .stall-icon.state-held {
+                background: var(--warn);
+            }
+            .stall-icon.state-offline {
+                background: var(--off);
+            }
+
+            .pill {
+                display: inline-flex;
+                align-self: flex-start;
+                margin-top: 12px;
+                border-radius: 999px;
+                padding: 5px 10px;
+                font-size: 0.76rem;
+                font-weight: 700;
+                border: 1px solid #323846;
+                background: #171a22;
+            }
+
+            .pill-available,
+            .pill-starting {
+                color: #8ce7bc;
+            }
+            .pill-occupied {
+                color: #ffb6b0;
+            }
+            .pill-degraded,
+            .pill-held {
+                color: #ffd98f;
+            }
+            .pill-offline {
+                color: #c4ccd8;
+            }
+
+            .stall-actions {
+                margin-top: 10px;
+            }
+
+            .stall-book-btn {
+                width: 100%;
+                background: #151922;
+                border: 1px solid #353c4d;
+                color: #d6dce7;
+                border-radius: 8px;
+                padding: 7px 8px;
+                font-size: 0.76rem;
+                font-weight: 700;
+                cursor: pointer;
+            }
+
+            .stall-book-btn:disabled {
+                opacity: 0.45;
+                cursor: not-allowed;
+            }
+
+            .side-column {
+                display: grid;
+                grid-template-rows: auto 1fr auto;
+                gap: 12px;
+                min-height: 0;
+            }
+
+            .side-panel {
+                padding: 14px;
+                background: var(--panel-2);
+            }
+
+            .section-title-wrap h2 {
+                margin: 0;
+                font-size: 1.05rem;
+            }
+
+            .section-title-wrap p {
+                margin: 5px 0 0;
+                color: var(--muted);
+                font-size: 0.82rem;
+            }
+
+            .arrival-list,
+            .hold-list {
+                margin-top: 10px;
+                display: grid;
+                gap: 8px;
+            }
+
+            .arrival-item,
+            .hold-item {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+                border: 1px solid #323846;
+                border-radius: 10px;
+                padding: 9px;
+                background: #171b23;
+            }
+
+            .hold-item {
+                display: block;
+            }
+
+            .hold-top {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .hold-title,
+            .arrival-title {
+                margin: 0;
+                font-size: 0.82rem;
+                font-weight: 700;
+            }
+
+            .hold-sub,
+            .arrival-sub {
+                margin: 2px 0 0;
+                font-size: 0.74rem;
+                color: var(--muted);
+            }
+
+            .arrival-left {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .arrival-emoji {
+                width: 26px;
+                height: 26px;
+                border-radius: 999px;
+                display: grid;
+                place-items: center;
+                background: #232b38;
+            }
+
+            .arrival-time,
+            .hold-time {
+                font-size: 0.76rem;
+                font-weight: 700;
+                color: #bfd2ec;
+            }
+
+            .pulse-row {
+                margin-top: 9px;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .booking-modal {
+                border: 1px solid #363d4d;
+                padding: 0;
+                border-radius: 14px;
+                max-width: 420px;
+                width: min(92vw, 420px);
+                background: #141820;
+                color: var(--text);
+            }
+
+            .booking-modal::backdrop {
+                background: rgba(3, 5, 10, 0.72);
+            }
+
+            .booking-form {
+                margin: 0;
+                padding: 18px;
+                display: grid;
+                gap: 10px;
+            }
+
+            .booking-form h2 {
+                margin: 0;
+                font-size: 1.15rem;
+            }
+
+            .booking-form p {
+                margin: 0;
+                font-size: 0.83rem;
+                color: var(--muted);
+            }
+
+            .booking-form label {
+                display: grid;
+                gap: 6px;
+                font-size: 0.8rem;
+                color: #bec7d6;
+                font-weight: 600;
+            }
+
+            .booking-form input,
+            .booking-form select {
+                border: 1px solid #343b4b;
+                border-radius: 9px;
+                padding: 9px;
+                font-family: inherit;
+                font-size: 0.86rem;
+                color: var(--text);
+                background: #10141c;
+            }
+
+            body[data-theme="light"] {
+                --bg: #f6f7fb;
+                --bg-soft: #ffffff;
+                --panel: #ffffff;
+                --panel-2: #ffffff;
+                --line: #d7dbe4;
+                --text: #151823;
+                --muted: #5f6678;
+                background:
+                    radial-gradient(
+                        circle at 10% -8%,
+                        #eceff7 0%,
+                        transparent 34%
+                    ),
+                    linear-gradient(180deg, #fbfbfd 0%, #f4f6fa 100%);
+            }
+
+            body[data-theme="light"] .backdrop {
+                background: linear-gradient(
+                    to bottom,
+                    rgba(17, 24, 39, 0.03),
+                    transparent 24%
+                );
+            }
+
+            body[data-theme="light"] .status-chip {
+                border-color: #d7dde8;
+                background: #f8f9fc;
+                color: #495266;
+            }
+
+            body[data-theme="light"] .theme-toggle {
+                border-color: #d4dbe7;
+                background: #ffffff;
+                color: #2b3446;
+            }
+
+            body[data-theme="light"] .panel,
+            body[data-theme="light"] .station-overview,
+            body[data-theme="light"] .side-panel,
+            body[data-theme="light"] .kpis article,
+            body[data-theme="light"] .helper-card,
+            body[data-theme="light"] .station-meta > div,
+            body[data-theme="light"] .pulse-item,
+            body[data-theme="light"] .legend,
+            body[data-theme="light"] .stall,
+            body[data-theme="light"] .arrival-item,
+            body[data-theme="light"] .hold-item,
+            body[data-theme="light"] .stall-book-btn,
+            body[data-theme="light"] .booking-modal,
+            body[data-theme="light"] .booking-form input,
+            body[data-theme="light"] .booking-form select,
+            body[data-theme="light"] .btn-ghost {
+                border-color: #d7dce6;
+                background: #ffffff;
+                color: #232a38;
+            }
+
+            body[data-theme="light"] .kpi-value,
+            body[data-theme="light"] .meta-value,
+            body[data-theme="light"] .hold-time,
+            body[data-theme="light"] .arrival-time {
+                color: #1c2433;
+            }
+
+            body[data-theme="light"] .pill {
+                background: #f4f6fb;
+            }
+
+            body[data-theme="light"] .stall-meter {
+                background: #e7eaf1;
+            }
+
+            body[data-theme="light"] .arrival-emoji {
+                background: #eef1f8;
+            }
+
+            .modal-actions {
+                margin-top: 4px;
+                display: flex;
+                justify-content: flex-end;
+                gap: 8px;
+            }
+
+            @keyframes pulse {
+                0%,
+                100% {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+
+                50% {
+                    transform: scale(1.2);
+                    opacity: 0.6;
+                }
+            }
+
+            @media (max-width: 1080px) {
+                .board-head,
+                .board-layout {
+                    grid-template-columns: 1fr;
+                }
+
+                .helper-strip {
+                    grid-template-columns: 1fr;
+                }
+
+                .board-stage {
+                    min-height: auto;
+                }
+
+                .stall-grid {
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                }
+
+                .side-column {
+                    grid-template-rows: auto;
+                }
+            }
+
+            @media (max-width: 680px) {
+                .site-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+
+                .header-actions {
+                    width: 100%;
+                    justify-content: space-between;
+                }
+
+                .board-stage {
+                    padding: 16px;
+                }
+
+                .kpis,
+                .station-meta,
+                .pulse-row,
+                .stall-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                h1 {
+                    font-size: 2rem;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="backdrop"></div>
+        <header class="site-header">
+            <div class="brand">
+                <span class="brand-dot"></span>
+                <span>Tesla Supercharge Live Board</span>
+            </div>
+            <div class="header-actions">
+                <div class="status-chip">
+                    <span class="pulse"></span>
+                    Live view ready
+                </div>
+                <button
+                    id="theme-toggle"
+                    class="theme-toggle"
+                    type="button"
+                    aria-label="Switch color mode"
+                >
+                    Light mode
+                </button>
+            </div>
+        </header>
+
+        <main class="container">
+            <section class="board-stage panel">
+                <div class="board-head">
+                    <div>
+                        <p class="eyebrow">Live Supercharger Station</p>
+                        <h1>Live Stall Board</h1>
+                        <p class="lead">
+                            One look should tell drivers where to go now.
+                        </p>
+                        <div class="hero-actions">
+                            <button
+                                id="open-booking"
+                                class="btn btn-primary"
+                                type="button"
+                            >
+                                Book A Stall
+                            </button>
+                            <button
+                                id="book-best"
+                                class="btn btn-ghost"
+                                type="button"
+                            >
+                                Auto Pick Best
+                            </button>
+                        </div>
+                    </div>
+                    <div class="kpis">
+                        <article>
+                            <p class="kpi-value" id="kpi-total">0</p>
+                            <p class="kpi-label">Total stalls</p>
+                        </article>
+                        <article>
+                            <p class="kpi-value" id="kpi-open">0</p>
+                            <p class="kpi-label">Available</p>
+                        </article>
+                        <article>
+                            <p class="kpi-value" id="kpi-busy">0</p>
+                            <p class="kpi-label">Busy or slow</p>
+                        </article>
+                    </div>
+                </div>
+
+                <div class="helper-strip" aria-label="How to read this board">
+                    <article class="helper-card">
+                        <h3>1) Pick a green stall</h3>
+                        <p>
+                            Green means open now. Tap
+                            <strong>Reserve This Stall</strong> to hold it.
+                        </p>
+                    </article>
+                    <article class="helper-card">
+                        <h3>2) Watch your hold timer</h3>
+                        <p>
+                            Your reservation appears under
+                            <strong>Active Holds</strong> with a countdown.
+                        </p>
+                    </article>
+                    <article class="helper-card">
+                        <h3>3) Plug in and start</h3>
+                        <p>
+                            When you arrive, use <strong>Start</strong> so the
+                            stall moves into session mode.
+                        </p>
+                    </article>
+                </div>
+
+                <div class="board-layout">
+                    <article class="station-overview">
+                        <div class="station-meta">
+                            <div>
+                                <p class="meta-label">Station</p>
+                                <p class="meta-value">I-95 South / Newark</p>
+                            </div>
+                            <div>
+                                <p class="meta-label">Current load</p>
+                                <p class="meta-value" id="station-load">0%</p>
+                            </div>
+                            <div>
+                                <p class="meta-label">Cars arriving soon</p>
+                                <p class="meta-value" id="arrival-count">0</p>
+                            </div>
+                        </div>
+
+                        <div class="legend-row">
+                            <span class="legend legend-available"
+                                >Available</span
+                            >
+                            <span class="legend legend-occupied">Charging</span>
+                            <span class="legend legend-degraded"
+                                >Slower speed</span
+                            >
+                            <span class="legend legend-offline">Offline</span>
+                            <span class="legend legend-held">Reserved</span>
+                            <span class="legend legend-starting">Starting</span>
+                        </div>
+
+                        <div
+                            id="stall-grid"
+                            class="stall-grid"
+                            aria-live="polite"
+                        ></div>
+                    </article>
+
+                    <aside class="side-column">
+                        <article class="panel side-panel compact-panel">
+                            <div class="section-title-wrap">
+                                <h2>Active Holds</h2>
+                                <p>Reserved but not plugged in yet.</p>
+                            </div>
+                            <div id="hold-list" class="hold-list"></div>
+                        </article>
+
+                        <article class="panel side-panel">
+                            <div class="section-title-wrap">
+                                <h2>Arrivals</h2>
+                                <p>Cars on the way.</p>
+                            </div>
+                            <div id="arrival-list" class="arrival-list"></div>
+                        </article>
+
+                        <article class="panel side-panel compact-panel">
+                            <div class="section-title-wrap">
+                                <h2>Station Pulse</h2>
+                                <p>Quick count by status.</p>
+                            </div>
+                            <div class="pulse-row">
+                                <div class="pulse-item">
+                                    <p class="meta-label">Available</p>
+                                    <p class="meta-value" id="pulse-available">
+                                        0
+                                    </p>
+                                </div>
+                                <div class="pulse-item">
+                                    <p class="meta-label">Charging</p>
+                                    <p class="meta-value" id="pulse-occupied">
+                                        0
+                                    </p>
+                                </div>
+                                <div class="pulse-item">
+                                    <p class="meta-label">Slower</p>
+                                    <p class="meta-value" id="pulse-degraded">
+                                        0
+                                    </p>
+                                </div>
+                                <div class="pulse-item">
+                                    <p class="meta-label">Offline</p>
+                                    <p class="meta-value" id="pulse-offline">
+                                        0
+                                    </p>
+                                </div>
+                            </div>
+                        </article>
+                    </aside>
+                </div>
+            </section>
+        </main>
+
+        <dialog id="booking-modal" class="booking-modal">
+            <form id="booking-form" class="booking-form" method="dialog">
+                <h2>Create Stall Hold</h2>
+                <p>Reserve a charger with a short claim window.</p>
+
+                <label>
+                    Driver name
+                    <input
+                        id="driver-name"
+                        name="driverName"
+                        type="text"
+                        required
+                        placeholder="Alex"
+                    />
+                </label>
+
+                <label>
+                    Stall preference
+                    <select id="stall-choice" name="stallChoice">
+                        <option value="auto">Auto pick best available</option>
+                    </select>
+                </label>
+
+                <label>
+                    ETA to station
+                    <select id="eta-choice" name="eta">
+                        <option value="5">5 min</option>
+                        <option value="10" selected>10 min</option>
+                        <option value="15">15 min</option>
+                        <option value="20">20 min</option>
+                    </select>
+                </label>
+
+                <label>
+                    Charge to
+                    <select id="soc-choice" name="targetSoc">
+                        <option value="70">70%</option>
+                        <option value="80" selected>80%</option>
+                        <option value="90">90%</option>
+                        <option value="100">100% (longer stop)</option>
+                    </select>
+                </label>
+
+                <div class="modal-actions">
+                    <button
+                        class="btn btn-ghost"
+                        type="button"
+                        id="close-booking"
+                    >
+                        Cancel
+                    </button>
+                    <button class="btn btn-primary" type="submit">
+                        Reserve Stall
+                    </button>
+                </div>
+            </form>
+        </dialog>
+
+        <script>
+            const stalls = [
+                {
+                    id: "1A",
+                    state: "occupied",
+                    note: "About 22 min left",
+                    soc: 61,
+                    speed: "198 kW",
+                },
+                {
+                    id: "1B",
+                    state: "degraded",
+                    note: "Reduced speed",
+                    soc: 34,
+                    speed: "92 kW",
+                },
+                {
+                    id: "2A",
+                    state: "available",
+                    note: "Ready now",
+                    soc: 0,
+                    speed: "250 kW",
+                },
+                {
+                    id: "2B",
+                    state: "available",
+                    note: "Ready now",
+                    soc: 0,
+                    speed: "250 kW",
+                },
+                {
+                    id: "3A",
+                    state: "occupied",
+                    note: "About 10 min left",
+                    soc: 73,
+                    speed: "121 kW",
+                },
+                {
+                    id: "3B",
+                    state: "degraded",
+                    note: "Reduced speed",
+                    soc: 46,
+                    speed: "88 kW",
+                },
+                {
+                    id: "4A",
+                    state: "offline",
+                    note: "Temporarily offline",
+                    soc: 0,
+                    speed: "-",
+                },
+                {
+                    id: "4B",
+                    state: "available",
+                    note: "Ready now",
+                    soc: 0,
+                    speed: "250 kW",
+                },
+            ];
+
+            const arrivals = [
+                {
+                    car: "Model Y",
+                    eta: "6 min",
+                    need: "Quick top-up",
+                    emoji: "🚗",
+                },
+                {
+                    car: "Model 3",
+                    eta: "11 min",
+                    need: "Standard charge",
+                    emoji: "🚙",
+                },
+                {
+                    car: "Model S",
+                    eta: "18 min",
+                    need: "Short stop",
+                    emoji: "🚘",
+                },
+            ];
+
+            const holds = [];
+
+            const stateText = {
+                available: "Available",
+                occupied: "Charging",
+                degraded: "Slower",
+                offline: "Offline",
+                held: "Reserved",
+                starting: "Starting",
+            };
+
+            const barPercentByState = {
+                available: 100,
+                occupied: 80,
+                degraded: 42,
+                offline: 0,
+                held: 58,
+                starting: 90,
+            };
+
+            const stallGrid = document.getElementById("stall-grid");
+            const arrivalList = document.getElementById("arrival-list");
+            const holdList = document.getElementById("hold-list");
+            const bookingModal = document.getElementById("booking-modal");
+            const bookingForm = document.getElementById("booking-form");
+            const stallChoice = document.getElementById("stall-choice");
+            const driverName = document.getElementById("driver-name");
+            const etaChoice = document.getElementById("eta-choice");
+            const socChoice = document.getElementById("soc-choice");
+            const themeToggle = document.getElementById("theme-toggle");
+
+            const THEME_KEY = "supercharge_theme";
+
+            const bookableStates = new Set(["available", "degraded"]);
+
+            function getInitialTheme() {
+                const saved = localStorage.getItem(THEME_KEY);
+                if (saved === "light" || saved === "dark") {
+                    return saved;
+                }
+
+                return window.matchMedia("(prefers-color-scheme: light)")
+                    .matches
+                    ? "light"
+                    : "dark";
+            }
+
+            function setTheme(theme) {
+                document.body.dataset.theme = theme;
+                themeToggle.textContent =
+                    theme === "dark" ? "Light mode" : "Dark mode";
+                localStorage.setItem(THEME_KEY, theme);
+            }
+
+            function getBookableStalls() {
+                return stalls.filter((stall) =>
+                    bookableStates.has(stall.state),
+                );
+            }
+
+            function parseSpeed(stall) {
+                const value = Number.parseInt(stall.speed, 10);
+                return Number.isNaN(value) ? 0 : value;
+            }
+
+            function pickBestStall() {
+                const bookable = getBookableStalls();
+                if (!bookable.length) {
+                    return null;
+                }
+
+                const available = bookable.filter(
+                    (stall) => stall.state === "available",
+                );
+                const source = available.length ? available : bookable;
+
+                return source.sort((a, b) => parseSpeed(b) - parseSpeed(a))[0];
+            }
+
+            function formatCountdown(timestamp) {
+                const delta = Math.max(0, timestamp - Date.now());
+                const minutes = Math.floor(delta / 60000);
+                const seconds = Math.floor((delta % 60000) / 1000);
+                return `${minutes}:${String(seconds).padStart(2, "0")}`;
+            }
+
+            function populateStallChoice(selectedId = "auto") {
+                const bookable = getBookableStalls();
+
+                stallChoice.innerHTML = [
+                    '<option value="auto">Auto pick best available</option>',
+                    ...bookable.map(
+                        (stall) =>
+                            `<option value="${stall.id}">${stall.id} - ${stateText[stall.state]} (${stall.speed})</option>`,
+                    ),
+                ].join("");
+
+                if (
+                    selectedId !== "auto" &&
+                    bookable.some((stall) => stall.id === selectedId)
+                ) {
+                    stallChoice.value = selectedId;
+                }
+            }
+
+            function openBookingModal(preferredStallId = "auto") {
+                populateStallChoice(preferredStallId);
+                bookingModal.showModal();
+                driverName.focus();
+            }
+
+            function closeBookingModal() {
+                bookingModal.close();
+                bookingForm.reset();
+                etaChoice.value = "10";
+                socChoice.value = "80";
+            }
+
+            function createHold({ driver, etaMinutes, targetSoc, stallId }) {
+                const chosenStall =
+                    stallId === "auto"
+                        ? pickBestStall()
+                        : stalls.find((stall) => stall.id === stallId);
+
+                if (!chosenStall || !bookableStates.has(chosenStall.state)) {
+                    return;
+                }
+
+                chosenStall.state = "held";
+                chosenStall.note = `${driver} arriving in ${etaMinutes} min`;
+
+                holds.unshift({
+                    id: `hold-${Date.now()}`,
+                    stallId: chosenStall.id,
+                    driver,
+                    etaMinutes,
+                    targetSoc,
+                    expiresAt: Date.now() + etaMinutes * 60000,
+                });
+
+                render();
+            }
+
+            function startSession(holdId) {
+                const index = holds.findIndex((hold) => hold.id === holdId);
+                if (index === -1) {
+                    return;
+                }
+
+                const hold = holds[index];
+                const stall = stalls.find((entry) => entry.id === hold.stallId);
+                if (stall) {
+                    stall.state = "starting";
+                    stall.note = `Plug in now - charging to ${hold.targetSoc}%`;
+                    stall.soc = 12;
+                }
+
+                holds.splice(index, 1);
+                render();
+            }
+
+            function releaseHold(holdId) {
+                const index = holds.findIndex((hold) => hold.id === holdId);
+                if (index === -1) {
+                    return;
+                }
+
+                const hold = holds[index];
+                const stall = stalls.find((entry) => entry.id === hold.stallId);
+                if (stall) {
+                    stall.state = "available";
+                    stall.note = "Ready now";
+                    stall.soc = 0;
+                    stall.speed = stall.speed === "-" ? "250 kW" : stall.speed;
+                }
+
+                holds.splice(index, 1);
+                render();
+            }
+
+            function renderKPIs() {
+                const counts = stalls.reduce(
+                    (acc, stall) => {
+                        acc[stall.state] = (acc[stall.state] || 0) + 1;
+                        return acc;
+                    },
+                    {
+                        available: 0,
+                        occupied: 0,
+                        degraded: 0,
+                        offline: 0,
+                        held: 0,
+                        starting: 0,
+                    },
+                );
+
+                const total = stalls.length;
+                const busy =
+                    counts.occupied +
+                    counts.degraded +
+                    counts.held +
+                    counts.starting;
+                const load = Math.round((busy / total) * 100);
+
+                document.getElementById("kpi-total").textContent =
+                    String(total);
+                document.getElementById("kpi-open").textContent = String(
+                    counts.available,
+                );
+                document.getElementById("kpi-busy").textContent = String(busy);
+                document.getElementById("pulse-available").textContent = String(
+                    counts.available,
+                );
+                document.getElementById("pulse-occupied").textContent = String(
+                    counts.occupied + counts.starting,
+                );
+                document.getElementById("pulse-degraded").textContent = String(
+                    counts.degraded + counts.held,
+                );
+                document.getElementById("pulse-offline").textContent = String(
+                    counts.offline,
+                );
+                document.getElementById("station-load").textContent =
+                    `${load}%`;
+                document.getElementById("arrival-count").textContent = String(
+                    arrivals.length + holds.length,
+                );
+            }
+
+            function renderStalls() {
+                stallGrid.innerHTML = stalls
+                    .map((stall) => {
+                        const canBook = bookableStates.has(stall.state);
+
+                        return `
+                  <article class="stall state-${stall.state}">
+                    <div class="stall-top">
+                      <h3>Stall ${stall.id}</h3>
+                      <span class="stall-icon state-${stall.state}"></span>
+                    </div>
+                    <p>${stall.note}</p>
+                    <div class="stall-meta-row">
+                      <span>Battery ${stall.soc}%</span>
+                      <span>${stall.speed}</span>
+                    </div>
+                    <div class="stall-meter">
+                      <span style="width: ${barPercentByState[stall.state] || 0}%"></span>
+                    </div>
+                    <span class="pill pill-${stall.state}">${stateText[stall.state]}</span>
+                    <div class="stall-actions">
+                      <button class="stall-book-btn" data-stall-id="${stall.id}" ${canBook ? "" : "disabled"}>Reserve This Stall</button>
+                    </div>
+                  </article>
+                `;
+                    })
+                    .join("");
+            }
+
+            function renderArrivals() {
+                const mergedArrivals = [
+                    ...arrivals,
+                    ...holds.map((hold) => ({
+                        car: hold.driver,
+                        eta: `${hold.etaMinutes} min`,
+                        need: `Heading to ${hold.stallId}`,
+                        emoji: "🧭",
+                    })),
+                ];
+
+                arrivalList.innerHTML = mergedArrivals
+                    .map(
+                        (arrival) => `
+                  <article class="arrival-item">
+                    <div class="arrival-left">
+                      <div class="arrival-emoji">${arrival.emoji}</div>
+                      <div>
+                        <p class="arrival-title">${arrival.car}</p>
+                        <p class="arrival-sub">${arrival.need}</p>
+                      </div>
+                    </div>
+                    <span class="arrival-time">ETA ${arrival.eta}</span>
+                  </article>
+                `,
+                    )
+                    .join("");
+            }
+
+            function renderHolds() {
+                if (!holds.length) {
+                    holdList.innerHTML =
+                        '<article class="hold-item"><p class="hold-title">No active holds</p><p class="hold-sub">New reservations will appear here.</p></article>';
+                    return;
+                }
+
+                holdList.innerHTML = holds
+                    .map(
+                        (hold) => `
+                  <article class="hold-item">
+                    <div class="hold-top">
+                      <p class="hold-title">${hold.driver} -> Stall ${hold.stallId}</p>
+                      <span class="hold-time">${formatCountdown(hold.expiresAt)}</span>
+                    </div>
+                    <p class="hold-sub">Charge to ${hold.targetSoc}%</p>
+                    <div class="hero-actions">
+                      <button class="stall-book-btn" data-action="start" data-hold-id="${hold.id}">Start</button>
+                      <button class="stall-book-btn" data-action="release" data-hold-id="${hold.id}">Release</button>
+                    </div>
+                  </article>
+                `,
+                    )
+                    .join("");
+            }
+
+            function render() {
+                renderKPIs();
+                renderStalls();
+                renderArrivals();
+                renderHolds();
+            }
+
+            document
+                .getElementById("open-booking")
+                .addEventListener("click", () => {
+                    openBookingModal("auto");
+                });
+
+            document
+                .getElementById("book-best")
+                .addEventListener("click", () => {
+                    const best = pickBestStall();
+                    if (!best) {
+                        return;
+                    }
+
+                    createHold({
+                        driver: "Guest driver",
+                        etaMinutes: 10,
+                        targetSoc: 80,
+                        stallId: best.id,
+                    });
+                });
+
+            document
+                .getElementById("close-booking")
+                .addEventListener("click", () => {
+                    closeBookingModal();
+                });
+
+            bookingForm.addEventListener("submit", (event) => {
+                event.preventDefault();
+
+                createHold({
+                    driver: driverName.value.trim() || "Guest driver",
+                    etaMinutes: Number(etaChoice.value),
+                    targetSoc: Number(socChoice.value),
+                    stallId: stallChoice.value,
+                });
+
+                closeBookingModal();
+            });
+
+            stallGrid.addEventListener("click", (event) => {
+                const target = event.target;
+                if (!(target instanceof HTMLButtonElement)) {
+                    return;
+                }
+
+                const stallId = target.dataset.stallId;
+                if (!stallId) {
+                    return;
+                }
+
+                openBookingModal(stallId);
+            });
+
+            holdList.addEventListener("click", (event) => {
+                const target = event.target;
+                if (!(target instanceof HTMLButtonElement)) {
+                    return;
+                }
+
+                const holdId = target.dataset.holdId;
+                const action = target.dataset.action;
+
+                if (!holdId || !action) {
+                    return;
+                }
+
+                if (action === "start") {
+                    startSession(holdId);
+                    return;
+                }
+
+                if (action === "release") {
+                    releaseHold(holdId);
+                }
+            });
+
+            themeToggle.addEventListener("click", () => {
+                const next =
+                    document.body.dataset.theme === "dark" ? "light" : "dark";
+                setTheme(next);
+            });
+
+            setInterval(() => {
+                for (let index = holds.length - 1; index >= 0; index -= 1) {
+                    const hold = holds[index];
+                    if (hold.expiresAt <= Date.now()) {
+                        releaseHold(hold.id);
+                    }
+                }
+
+                renderHolds();
+            }, 1000);
+
+            setTheme(getInitialTheme());
+            render();
+        </script>
+    </body>
+</html>
