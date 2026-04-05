@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/femitubosun/go-sweepline-availability/internal/availability"
 	"github.com/femitubosun/go-sweepline-availability/internal/booking"
 	"github.com/femitubosun/go-sweepline-availability/internal/config"
 	"github.com/femitubosun/go-sweepline-availability/internal/location"
@@ -21,9 +20,8 @@ type app struct {
 }
 
 type services struct {
-	location     location.Service
-	availability availability.Service
-	booking      booking.Service
+	location location.Service
+	booking  booking.Service
 }
 
 func (a *app) mount() http.Handler {
@@ -35,7 +33,6 @@ func (a *app) mount() http.Handler {
 
 	a.registerStaticRoute(mux)
 	a.registerLocationRoutes(mux)
-	a.registerAvailabilityRoutes(mux)
 	a.registerBookingRoutes(mux)
 
 	return mux
@@ -76,8 +73,7 @@ func NewApp(cfg *config.Config, cache *redis.Cache, logger *slog.Logger) *app {
 	bookingRepo := booking.NewRepo(cache)
 
 	return &app{config: cfg, logger: logger, services: services{
-		location:     location.NewService(),
-		availability: availability.NewService(cache),
-		booking:      booking.NewService(bookingRepo),
+		location: location.NewService(),
+		booking:  booking.NewService(bookingRepo),
 	}}
 }

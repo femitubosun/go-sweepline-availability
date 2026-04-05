@@ -1,12 +1,23 @@
 package booking
 
+import "time"
+
+type BookingStatus string
+
+const (
+	BookingStatusPending   BookingStatus = "pending"
+	BookingStatusConfirmed BookingStatus = "confirmed"
+	BookingStatusActive    BookingStatus = "active"
+	BookingStatusCompleted BookingStatus = "completed"
+	BookingStatusCancelled BookingStatus = "cancelled"
+)
+
 type Booking struct {
 	ID              string        `json:"id"`
 	GuestName       string        `json:"guestName"`
 	CourtID         string        `json:"courtId"`
-	StartTime       string        `json:"startTime"`
-	EndTime         string        `json:"endTime"`
+	Interval        Interval      `json:"interval"`
 	DurationMinutes int           `json:"durationMinutes"`
 	Status          BookingStatus `json:"status"`
-	CancelledAt     string        `json:"cancelledAt"`
+	CancelledAt     *time.Time    `json:"cancelledAt,omitempty"`
 }

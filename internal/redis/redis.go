@@ -27,3 +27,7 @@ func NewCache(c *config.Config) (*Cache, error) {
 		config: c,
 	}, nil
 }
+
+func (c *Cache) Client() *redis.Client {
+	return c.client
+}
