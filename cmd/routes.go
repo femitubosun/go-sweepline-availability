@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/femitubosun/go-sweepline-availability/internal/availability"
+	"github.com/femitubosun/go-sweepline-availability/internal/booking"
 	"github.com/femitubosun/go-sweepline-availability/internal/location"
 )
 
@@ -19,6 +20,15 @@ func (a *app) registerAvailabilityRoutes(m *http.ServeMux) {
 	h := availability.NewHandler(a.services.availability)
 
 	m.Handle("GET "+apiV1+"/courts/{id}/availability", http.HandlerFunc(h.GetAvailability))
+}
+
+func (a *app) registerBookingRoutes(m *http.ServeMux) {
+	h := booking.NewHandler(a.services.booking)
+
+	m.Handle("GET "+apiV1+"/courts/{id}/bookings", http.HandlerFunc(h.GetCourtBookings))
+	m.Handle("POST "+apiV1+"/courts/{id}/bookings", http.HandlerFunc(h.CreateBooking))
+	m.Handle("PATCH "+apiV1+"/courts/{id}/bookings/{id}", http.HandlerFunc(h.CancelBooking))
+	m.Handle("GET "+apiV1+"/courts/{id}/availability", http.HandlerFunc(h.AvailabilitySearch))
 }
 
 func (a *app) registerStaticRoute(m *http.ServeMux) {
