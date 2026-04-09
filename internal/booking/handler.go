@@ -19,6 +19,11 @@ func (h *handler) CreateBooking(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	courtID := r.PathValue("courtID")
 
+	if courtID == "" {
+		appJSON.Write(w, http.StatusBadRequest, map[string]string{"error": "courtID is required"})
+		return
+	}
+
 	var req createBookingRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		appJSON.Write(w, http.StatusBadRequest, map[string]string{"error": "invalid JSON"})
@@ -46,7 +51,7 @@ func (h *handler) CreateBooking(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) GetCourtBookings(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	courtID := r.PathValue("id")
+	courtID := r.PathValue("courtID")
 
 	bookings, err := h.service.ListCourtBookings(ctx, courtID)
 	if err != nil {
@@ -95,6 +100,11 @@ func (h *handler) AvailabilitySearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if from.Before(time.Now()) {
+		appJSON.Write(w, http.StatusBadRequest, map[string]string{"error": "cannot search for availability in the past"})
+		return
+	}
+
 	gaps, err := h.service.GetGaps(ctx, GetGapsInput{
 		CourtID:      courtID,
 		DurationMins: durationMins,
@@ -112,6 +122,8 @@ func (h *handler) AvailabilitySearch(w http.ResponseWriter, r *http.Request) {
 			End:   gap.End.Format(time.RFC3339),
 		}
 	}
+
+	fmt.Printf("This is the handler")
 
 	appJSON.Write(w, http.StatusOK, resp)
 }

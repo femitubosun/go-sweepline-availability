@@ -8,11 +8,9 @@ import "github.com/redis/go-redis/v9"
  *   2. bookings
  *  args:
  *   1. bookingId
- *   2. courtId
- *   3. startTime
- *   4. endTime
- *   5. guestName
- *
+ *   2. startTime
+ *   3. endTime
+ *   4. guestName
  */
 
 var reserveScript = redis.NewScript(`
@@ -29,7 +27,6 @@ var reserveScript = redis.NewScript(`
 	-- Find existing bookings that start before endTime
 	local candidates = redis.call('ZRANGEBYSCORE', bookingsIndex, '-inf', endTime)
 
-	-- Check each for overlap
 	for _, existingId in ipairs(candidates) do
 		local existingKey = bookingsHashPrefix .. ":" .. existingId
 		local existingEnd = redis.call('HGET', existingKey, 'end')
@@ -39,23 +36,17 @@ var reserveScript = redis.NewScript(`
 		end
 	end
 
-	-- No conflicts, create new booking
+	-- No conflict, create new booking
 	redis.call('ZADD', bookingsIndex, startTime, bookingId)
-	redis.call('HSET', bookingHashKey,
-		'id', bookingId,
-		'start', startTime,
-		'end', endTime,
-		'guestName', guestName
-	)
+	redis.call('HSET', bookingHashKey, 'id', bookingId, 'start', startTime, 'end', endTime, 'guestName', guestName)
 	return 1
 `)
 
+/*
+ *   1. booking:courtID:bookingId
+ */
 var getBookingScript = redis.NewScript(`
-	local bookingsHashPrefix = KEYS[1]
-	local bookingId = ARGV[1]
-
-
-	local bookingHashKey = bookingsHashPrefix .. ":" .. bookingId
+	local bookingHashKey = KEYS[1]
 
 	local booking = redis.call('HGETALL', bookingHashKey)
 	return booking
