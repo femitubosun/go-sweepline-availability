@@ -3,6 +3,7 @@ package booking
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strconv"
 	"time"
 
@@ -59,13 +60,10 @@ func (r *repo) Reserve(ctx context.Context, input ReserveInput) (Booking, error)
 
 func (r *repo) Get(ctx context.Context, courtID string, bookingID string) (Booking, error) {
 	keys := []string{
-		fmt.Sprintf("booking:{%s}", courtID),
-	}
-	args := []any{
-		bookingID,
+		fmt.Sprintf("booking:{%s}:%s", courtID, bookingID),
 	}
 
-	result, err := getBookingScript.Run(ctx, r.cache.Client(), keys, args...).Result()
+	result, err := getBookingScript.Run(ctx, r.cache.Client(), keys).Result()
 	if err != nil {
 		return Booking{}, fmt.Errorf("redis script failed: %w", err)
 	}
@@ -128,6 +126,7 @@ func (r *repo) ListByCourtId(ctx context.Context, courtID string) ([]Booking, er
 
 	for i, bookingID := range bookingIDs {
 		bookingKey := fmt.Sprintf("booking:{%s}:%s", courtID, bookingID)
+		fmt.Printf("[DEBUG] ListByCourtId: preparing HGETALL, index=%d, bookingID=%s, key=%s\n", i, bookingID, bookingKey)
 		cmds[i] = pipe.HGetAll(ctx, bookingKey)
 	}
 
@@ -139,7 +138,12 @@ func (r *repo) ListByCourtId(ctx context.Context, courtID string) ([]Booking, er
 	bookings := make([]Booking, 0, len(bookingIDs))
 	for i, cmd := range cmds {
 		result, err := cmd.Result()
-		if err != nil || len(result) == 0 {
+		if err != nil {
+			slog.Error("HGETALL returned error", "index", i, "bookingID", bookingIDs[i], "error", err)
+		}
+
+		if len(result) == 0 {
+			slog.Warn("HGETALL returned empty hash", "index", i, "bookingID", bookingIDs[i])
 			continue
 		}
 
@@ -164,7 +168,6 @@ func (r *repo) ListByCourtId(ctx context.Context, courtID string) ([]Booking, er
 	}
 
 	return bookings, nil
-
 }
 
 func (r *repo) GetGaps(ctx context.Context, input GetGapsInput) error {

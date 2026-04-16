@@ -94,6 +94,8 @@ func (h *handler) AvailabilitySearch(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	courtID := r.PathValue("courtID")
 
+	fmt.Print("Availability search")
+
 	from, to, durationMins, err := parseAvailabilityQuery(r)
 	if err != nil {
 		appJSON.Write(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
@@ -122,8 +124,6 @@ func (h *handler) AvailabilitySearch(w http.ResponseWriter, r *http.Request) {
 			End:   gap.End.Format(time.RFC3339),
 		}
 	}
-
-	fmt.Printf("This is the handler")
 
 	appJSON.Write(w, http.StatusOK, resp)
 }

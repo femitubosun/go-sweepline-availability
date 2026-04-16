@@ -81,6 +81,7 @@ func (s *svc) GetGaps(ctx context.Context, input GetGapsInput) ([]Interval, erro
 		}
 	}
 
+	fmt.Print(bookings)
 	sort.Slice(overlapping, func(i, j int) bool {
 		return overlapping[i].Interval.Start.Before(overlapping[j].Interval.Start)
 	})
