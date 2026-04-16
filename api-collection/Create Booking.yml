@@ -1,0 +1,108 @@
+info:
+  name: Create Booking
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{baseURL}}/courts/:courtID/bookings"
+  params:
+    - name: courtID
+      value: "{{courtID}}"
+      type: path
+  body:
+    type: json
+    data: |-
+      {
+        "startTime": "2026-04-17T10:00:00Z",
+        "durationMinutes": 30,
+        "guestName": "{{$randomFullName}}"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const body = res.getBody()
+
+        if(res.getStatus() == 201){
+          bru.setEnvVar("bookingID", body['id'])
+          bru.setEnvVar("courtID", body['courtId'])
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: 201 - Created
+    request:
+      url: "{{baseURL}}/courts/:courtID/bookings"
+      method: POST
+      params:
+        - name: courtID
+          value: court-001
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "startTime": "2026-04-17T10:00:00Z",
+            "durationMinutes": 40,
+            "guestName": "{{$randomFullName}}"
+          }
+    response:
+      status: 201
+      statusText: Created
+      headers:
+        - name: content-type
+          value: application/json
+        - name: date
+          value: Thu, 16 Apr 2026 19:18:15 GMT
+        - name: content-length
+          value: "169"
+      body:
+        type: json
+        data: |-
+          {
+            "id": "69579a64-df06-426d-9307-db0ae1f08fdf",
+            "courtId": "court-001",
+            "startTime": "2026-04-17T10:00:00Z",
+            "endTime": "2026-04-17T10:40:00Z",
+            "guestName": "Joe Roob-O'Connell"
+          }
+  - name: 409 - Conflict with Existing Reservation
+    request:
+      url: "{{baseURL}}/courts/:courtID/bookings"
+      method: POST
+      params:
+        - name: courtID
+          value: court-001
+          type: path
+      body:
+        type: json
+        data: |-
+          {
+            "startTime": "2026-04-17T10:00:00Z",
+            "durationMinutes": 40,
+            "guestName": "{{$randomFullName}}"
+          }
+    response:
+      status: 409
+      statusText: Conflict
+      headers:
+        - name: content-type
+          value: application/json
+        - name: date
+          value: Thu, 16 Apr 2026 19:18:40 GMT
+        - name: content-length
+          value: "74"
+      body:
+        type: json
+        data: |-
+          {
+            "error": "slot unavailable: booking conflicts with existing reservation"
+          }

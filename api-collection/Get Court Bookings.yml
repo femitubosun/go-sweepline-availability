@@ -1,0 +1,86 @@
+info:
+  name: Get Court Bookings
+  type: http
+  seq: 2
+
+http:
+  method: GET
+  url: "{{baseURL}}/courts/:courtID/bookings"
+  params:
+    - name: courtID
+      value: "{{courtID}}"
+      type: path
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+
+examples:
+  - name: 200 - Success
+    request:
+      url: "{{baseURL}}/courts/:courtID/bookings"
+      method: GET
+      params:
+        - name: courtID
+          value: court-001
+          type: path
+    response:
+      status: 200
+      statusText: OK
+      headers:
+        - name: content-type
+          value: application/json
+        - name: date
+          value: Thu, 16 Apr 2026 19:14:48 GMT
+        - name: content-length
+          value: "1016"
+      body:
+        type: json
+        data: |-
+          [
+            {
+              "id": "7557cb09-0359-4b8a-885f-ee59aa8e59b3",
+              "courtId": "court-001",
+              "startTime": "2026-04-05T11:00:00+01:00",
+              "endTime": "2026-04-05T12:00:00+01:00",
+              "guestName": "John Doe"
+            },
+            {
+              "id": "0bf0e01d-d4e0-448d-a3bf-f0c20b3c072e",
+              "courtId": "court-001",
+              "startTime": "2026-04-06T09:00:00+01:00",
+              "endTime": "2026-04-06T10:00:00+01:00",
+              "guestName": "John Doe"
+            },
+            {
+              "id": "b95a09a0-4dd6-47d7-9ddd-33808b67e2d6",
+              "courtId": "court-001",
+              "startTime": "2026-04-06T11:00:00+01:00",
+              "endTime": "2026-04-06T12:00:00+01:00",
+              "guestName": "John Doe"
+            },
+            {
+              "id": "809242fd-e10c-45af-9e99-7a24d5283954",
+              "courtId": "court-001",
+              "startTime": "2026-04-06T12:00:00+01:00",
+              "endTime": "2026-04-06T13:00:00+01:00",
+              "guestName": "John Doe"
+            },
+            {
+              "id": "47f24efc-bd85-4e65-acf2-2ae485564903",
+              "courtId": "court-001",
+              "startTime": "2026-04-09T12:00:00+01:00",
+              "endTime": "2026-04-09T13:00:00+01:00",
+              "guestName": "John Doe"
+            },
+            {
+              "id": "cf975bb7-7a47-48ae-998c-86917ed5377f",
+              "courtId": "court-001",
+              "startTime": "2026-04-09T13:00:00+01:00",
+              "endTime": "2026-04-09T14:00:00+01:00",
+              "guestName": "John Doe"
+            }
+          ]

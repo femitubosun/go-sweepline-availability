@@ -19,7 +19,7 @@ type Interval struct {
 
 type Repository interface {
 	Reserve(ctx context.Context, input ReserveInput) (Booking, error)
-	Get(ctx context.Context, courtID string, bookingID string) (Booking, error)
+	Get(ctx context.Context, bookingID string) (Booking, error)
 	Release(ctx context.Context, bookingID string) error
 	GetGaps(ctx context.Context, input GetGapsInput) error
 	ListByCourtId(ctx context.Context, courtID string) ([]Booking, error)
@@ -32,7 +32,7 @@ type repo struct {
 func (r *repo) Reserve(ctx context.Context, input ReserveInput) (Booking, error) {
 	keys := []string{
 		fmt.Sprintf("bookings:{%s}", input.CourtID),
-		fmt.Sprintf("booking:{%s}", input.CourtID),
+		"booking",
 	}
 	args := []any{
 		input.ID,
@@ -58,9 +58,9 @@ func (r *repo) Reserve(ctx context.Context, input ReserveInput) (Booking, error)
 	}, nil
 }
 
-func (r *repo) Get(ctx context.Context, courtID string, bookingID string) (Booking, error) {
+func (r *repo) Get(ctx context.Context, bookingID string) (Booking, error) {
 	keys := []string{
-		fmt.Sprintf("booking:{%s}:%s", courtID, bookingID),
+		fmt.Sprintf("booking:%s", bookingID),
 	}
 
 	result, err := getBookingScript.Run(ctx, r.cache.Client(), keys).Result()
@@ -77,9 +77,7 @@ func (r *repo) Get(ctx context.Context, courtID string, bookingID string) (Booki
 		return Booking{}, ErrNotFound
 	}
 
-	booking := Booking{
-		CourtID: courtID,
-	}
+	booking := Booking{}
 
 	for i := 0; i < len(flatArray); i += 2 {
 		if i+1 >= len(flatArray) {
@@ -100,6 +98,8 @@ func (r *repo) Get(ctx context.Context, courtID string, bookingID string) (Booki
 			booking.Interval.End = time.UnixMilli(endMs)
 		case "guestName":
 			booking.GuestName = value
+		case "courtId":
+			booking.CourtID = value
 		}
 	}
 
@@ -107,7 +107,24 @@ func (r *repo) Get(ctx context.Context, courtID string, bookingID string) (Booki
 }
 
 func (r *repo) Release(ctx context.Context, bookingID string) error {
+	keys := []string{
+		fmt.Sprintf("booking:%s", bookingID),
+	}
+	args := []any{
+		bookingID,
+	}
+
+	result, err := releaseBookingScript.Run(ctx, r.cache.Client(), keys, args).Int()
+	if err != nil {
+		return fmt.Errorf("redis script failed: %w", err)
+	}
+
+	if result == 0 {
+		return ErrNotFound
+	}
+
 	return nil
+
 }
 
 func (r *repo) ListByCourtId(ctx context.Context, courtID string) ([]Booking, error) {
@@ -125,9 +142,7 @@ func (r *repo) ListByCourtId(ctx context.Context, courtID string) ([]Booking, er
 	cmds := make([]*redis.MapStringStringCmd, len(bookingIDs))
 
 	for i, bookingID := range bookingIDs {
-		bookingKey := fmt.Sprintf("booking:{%s}:%s", courtID, bookingID)
-		fmt.Printf("[DEBUG] ListByCourtId: preparing HGETALL, index=%d, bookingID=%s, key=%s\n", i, bookingID, bookingKey)
-		cmds[i] = pipe.HGetAll(ctx, bookingKey)
+		cmds[i] = pipe.HGetAll(ctx, fmt.Sprintf("booking:%s", bookingID))
 	}
 
 	_, err = pipe.Exec(ctx)

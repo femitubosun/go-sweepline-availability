@@ -20,8 +20,8 @@ func (a *app) registerBookingRoutes(m *http.ServeMux) {
 
 	m.Handle("GET "+apiV1+"/courts/{courtID}/bookings", http.HandlerFunc(h.GetCourtBookings))
 	m.Handle("POST "+apiV1+"/courts/{courtID}/bookings", http.HandlerFunc(h.CreateBooking))
-	m.Handle("GET "+apiV1+"/courts/{courtID}/bookings/{bookingID}", http.HandlerFunc(h.GetBooking))
-	m.Handle("PATCH "+apiV1+"/courts/{courtID}/bookings/{bookingID}", http.HandlerFunc(h.CancelBooking))
+	m.Handle("GET "+apiV1+"/bookings/{bookingID}", http.HandlerFunc(h.GetBooking))
+	m.Handle("PATCH "+apiV1+"/bookings/{bookingID}/cancel", http.HandlerFunc(h.CancelBooking))
 	m.Handle("GET "+apiV1+"/courts/{courtID}/availability", http.HandlerFunc(h.AvailabilitySearch))
 }
 

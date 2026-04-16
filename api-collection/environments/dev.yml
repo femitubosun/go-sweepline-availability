@@ -1,0 +1,8 @@
+name: dev
+variables:
+  - name: baseURL
+    value: http://localhost:5200/api/v1
+  - name: bookingID
+    value: 7be4debc-09a5-4e65-a749-103f17873f1b
+  - name: courtID
+    value: court-001

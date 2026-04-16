@@ -13,8 +13,9 @@ var ErrHistoricalBooking = errors.New("booking cannot be in the past")
 type Service interface {
 	CreateBooking(ctx context.Context, input CreateBookingInput) (Booking, error)
 	ListCourtBookings(ctx context.Context, courtID string) ([]Booking, error)
-	GetBooking(ctx context.Context, courtID string, bookingID string) (Booking, error)
+	GetBooking(ctx context.Context, bookingID string) (Booking, error)
 	GetGaps(ctx context.Context, input GetGapsInput) ([]Interval, error)
+	CancelBooking(ctx context.Context, bookingId string) error
 }
 
 type svc struct {
@@ -58,14 +59,23 @@ func (s *svc) ListCourtBookings(ctx context.Context, courtID string) ([]Booking,
 	return bookings, nil
 }
 
-func (s *svc) GetBooking(ctx context.Context, courtID string, bookingID string) (Booking, error) {
-	booking, err := s.repo.Get(ctx, courtID, bookingID)
+func (s *svc) GetBooking(ctx context.Context, bookingID string) (Booking, error) {
+	booking, err := s.repo.Get(ctx, bookingID)
 
 	if err != nil {
 		return Booking{}, fmt.Errorf("failed to get bookings: %w", err)
 	}
 	return booking, nil
 
+}
+
+func (s *svc) CancelBooking(ctx context.Context, bookingID string) error {
+	err := s.repo.Release(ctx, bookingID)
+
+	if err != nil {
+		return fmt.Errorf("booking does not exist: %w", err)
+	}
+	return nil
 }
 
 func (s *svc) GetGaps(ctx context.Context, input GetGapsInput) ([]Interval, error) {
@@ -81,7 +91,6 @@ func (s *svc) GetGaps(ctx context.Context, input GetGapsInput) ([]Interval, erro
 		}
 	}
 
-	fmt.Print(bookings)
 	sort.Slice(overlapping, func(i, j int) bool {
 		return overlapping[i].Interval.Start.Before(overlapping[j].Interval.Start)
 	})

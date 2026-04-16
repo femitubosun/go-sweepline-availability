@@ -68,15 +68,28 @@ func (h *handler) GetCourtBookings(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) CancelBooking(w http.ResponseWriter, r *http.Request) {
-	appJSON.Write(w, http.StatusNotImplemented, map[string]string{"error": "not implemented"})
+	ctx := r.Context()
+	bookingID := r.PathValue("bookingID")
+
+	err := h.service.CancelBooking(ctx, bookingID)
+
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			appJSON.Write(w, http.StatusNotFound, map[string]string{"error": "booking not found"})
+			return
+		}
+		appJSON.Write(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	appJSON.Write(w, http.StatusNoContent, nil)
 }
 
 func (h *handler) GetBooking(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	courtID := r.PathValue("courtID")
-	bookingId := r.PathValue("bookingID")
+	bookingID := r.PathValue("bookingID")
 
-	booking, err := h.service.GetBooking(ctx, courtID, bookingId)
+	booking, err := h.service.GetBooking(ctx, bookingID)
 
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -211,24 +224,4 @@ func parseAvailabilityQuery(r *http.Request) (from, to time.Time, durationMins i
 	}
 
 	return from, to, durationMins, nil
-}
-
-func parseTimeRange(r *http.Request) (from, to time.Time, err error) {
-	q := r.URL.Query()
-
-	if fromStr := q.Get("from"); fromStr != "" {
-		from, err = time.Parse(time.RFC3339, fromStr)
-		if err != nil {
-			return from, to, fmt.Errorf("from: must be RFC3339")
-		}
-	}
-
-	if toStr := q.Get("to"); toStr != "" {
-		to, err = time.Parse(time.RFC3339, toStr)
-		if err != nil {
-			return from, to, fmt.Errorf("to: must be RFC3339")
-		}
-	}
-
-	return from, to, nil
 }
