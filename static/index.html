@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Tesla Supercharge Live Board</title>
+        <title>Court Availability Board</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
@@ -204,6 +204,12 @@
                 border: 1px solid #3a3f4b;
             }
 
+            .btn-danger {
+                background: transparent;
+                color: #ffb6b0;
+                border: 1px solid #5a3a3a;
+            }
+
             .kpis {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -263,7 +269,7 @@
                 gap: 14px;
             }
 
-            .station-overview {
+            .court-overview {
                 border: 1px solid #343947;
                 border-radius: 14px;
                 background: linear-gradient(180deg, #14171f 0%, #101219 100%);
@@ -272,13 +278,86 @@
                 flex-direction: column;
             }
 
-            .station-meta {
+            .court-selector {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 12px;
+                flex-wrap: wrap;
+            }
+
+            .date-bar {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                margin-bottom: 12px;
+                flex-wrap: wrap;
+            }
+
+            .date-btn {
+                padding: 6px 12px;
+                border-radius: 8px;
+                border: 1px solid #353c4d;
+                background: #171b23;
+                color: #d6dce7;
+                font-family: inherit;
+                font-size: 0.78rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.15s ease;
+            }
+
+            .date-btn:hover {
+                background: #1d232e;
+            }
+
+            .date-btn.active {
+                background: var(--accent);
+                border-color: var(--accent);
+                color: #fff;
+            }
+
+            .date-picker-wrap {
+                display: flex;
+                align-items: center;
+                margin-left: 4px;
+            }
+
+            .date-input {
+                border: 1px solid #343b4b;
+                border-radius: 8px;
+                padding: 6px 10px;
+                font-family: inherit;
+                font-size: 0.78rem;
+                color: var(--text);
+                background: #10141c;
+                cursor: pointer;
+            }
+
+            .court-tab {
+                padding: 6px 12px;
+                border-radius: 8px;
+                border: 1px solid #353c4d;
+                background: #171b23;
+                color: #d6dce7;
+                font-family: inherit;
+                font-size: 0.8rem;
+                font-weight: 700;
+                cursor: pointer;
+            }
+
+            .court-tab.active {
+                background: var(--accent);
+                border-color: var(--accent);
+                color: #fff;
+            }
+
+            .court-meta {
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
                 gap: 10px;
             }
 
-            .station-meta > div,
+            .court-meta > div,
             .pulse-item {
                 border: 1px solid #323846;
                 border-radius: 10px;
@@ -318,148 +397,217 @@
             .legend-available {
                 color: #8ce7bc;
             }
-            .legend-occupied {
+            .legend-booked {
                 color: #ffb6b0;
             }
-            .legend-degraded {
-                color: #ffd98f;
-            }
-            .legend-offline {
+            .legend-closed {
                 color: #c4ccd8;
             }
-            .legend-held {
-                color: #9cc7ff;
-            }
-            .legend-starting {
-                color: #8ce7bc;
-            }
 
-            .stall-grid {
+            .slot-grid {
                 margin-top: 12px;
                 display: grid;
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-                gap: 12px;
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+                gap: 16px;
                 flex: 1;
             }
 
-            .stall {
+            .slot {
                 border: 1px solid #353c4d;
-                border-radius: 12px;
+                border-radius: 14px;
                 background: #171b23;
-                padding: 12px;
-                min-height: 142px;
+                padding: 14px;
                 display: flex;
                 flex-direction: column;
-                justify-content: space-between;
-            }
-
-            .state-held {
-                border-color: #2f4d74;
-            }
-
-            .state-starting {
-                border-color: #2b5a4a;
-            }
-
-            .stall-top {
-                display: flex;
                 align-items: center;
-                justify-content: space-between;
                 gap: 10px;
+                transition:
+                    transform 0.15s ease,
+                    box-shadow 0.15s ease;
             }
 
-            .stall h3 {
-                margin: 0;
-                font-size: 1.05rem;
+            .slot:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
             }
 
-            .stall p {
-                margin: 8px 0 0;
-                color: var(--muted);
-                font-size: 0.86rem;
+            .slot-booked {
+                border-color: #5a3a3a;
+                opacity: 0.85;
             }
 
-            .stall-meta-row {
-                margin-top: 10px;
+            .slot-closed {
+                border-color: #3a3f4b;
+                opacity: 0.45;
+            }
+
+            .slot-closed .tennis-court {
+                background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+            }
+
+            .slot-closed .tennis-court::before,
+            .slot-closed .tennis-court::after,
+            .slot-closed .court-service-line-top,
+            .slot-closed .court-service-line-bottom,
+            .slot-closed .court-center-line,
+            .slot-closed .court-net {
+                opacity: 0.3;
+            }
+
+            .slot-closed .slot-time {
+                color: var(--off);
+            }
+
+            .court-closed-overlay {
+                position: absolute;
+                inset: 0;
                 display: flex;
                 align-items: center;
-                justify-content: space-between;
+                justify-content: center;
                 font-size: 0.75rem;
-                color: #bcc6d6;
-                font-weight: 700;
+                font-weight: 800;
+                color: #ff6b6b;
+                letter-spacing: 0.08em;
+                text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+                background: rgba(0, 0, 0, 0.25);
+                border-radius: 3px;
             }
 
-            .stall-meter {
-                margin-top: 7px;
+            .slot-time {
+                margin: 0;
+                font-size: 0.95rem;
+                font-weight: 700;
+                color: var(--text);
+            }
+
+            .tennis-court {
                 width: 100%;
-                height: 6px;
-                border-radius: 999px;
-                background: #293143;
+                aspect-ratio: 2.17 / 1;
+                background: linear-gradient(180deg, #3d7a3d 0%, #2d6a2d 100%);
+                border: 2px solid rgba(255, 255, 255, 0.85);
+                border-radius: 3px;
+                position: relative;
                 overflow: hidden;
+                box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.15);
             }
 
-            .stall-meter span {
-                display: block;
-                height: 100%;
-                border-radius: 999px;
-                background: linear-gradient(90deg, #6ca7ff 0%, #95e9c3 100%);
+            .tennis-court::before {
+                content: "";
+                position: absolute;
+                inset: 10% 13%;
+                border: 2px solid rgba(255, 255, 255, 0.75);
+                pointer-events: none;
             }
 
-            .stall-icon {
-                width: 10px;
-                height: 10px;
-                border-radius: 999px;
-                display: inline-block;
-                background: #6f7d94;
+            .tennis-court::after {
+                content: "";
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 50%;
+                height: 2px;
+                background: rgba(255, 255, 255, 0.75);
+                transform: translateY(-50%);
             }
 
-            .stall-icon.state-available,
-            .stall-icon.state-starting {
-                background: var(--ok);
-            }
-            .stall-icon.state-occupied {
-                background: var(--busy);
-            }
-            .stall-icon.state-degraded,
-            .stall-icon.state-held {
-                background: var(--warn);
-            }
-            .stall-icon.state-offline {
-                background: var(--off);
+            .court-service-line-top {
+                position: absolute;
+                left: 13%;
+                right: 13%;
+                top: 28%;
+                height: 2px;
+                background: rgba(255, 255, 255, 0.75);
             }
 
-            .pill {
-                display: inline-flex;
-                align-self: flex-start;
-                margin-top: 12px;
-                border-radius: 999px;
-                padding: 5px 10px;
-                font-size: 0.76rem;
-                font-weight: 700;
-                border: 1px solid #323846;
-                background: #171a22;
+            .court-service-line-bottom {
+                position: absolute;
+                left: 13%;
+                right: 13%;
+                bottom: 28%;
+                height: 2px;
+                background: rgba(255, 255, 255, 0.75);
             }
 
-            .pill-available,
-            .pill-starting {
-                color: #8ce7bc;
-            }
-            .pill-occupied {
-                color: #ffb6b0;
-            }
-            .pill-degraded,
-            .pill-held {
-                color: #ffd98f;
-            }
-            .pill-offline {
-                color: #c4ccd8;
+            .court-center-line {
+                position: absolute;
+                top: 28%;
+                bottom: 28%;
+                left: 50%;
+                width: 2px;
+                background: rgba(255, 255, 255, 0.75);
+                transform: translateX(-50%);
             }
 
-            .stall-actions {
-                margin-top: 10px;
+            .court-net {
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 50%;
+                height: 3px;
+                background: rgba(255, 255, 255, 0.9);
+                transform: translateY(-50%);
+                box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
             }
 
-            .stall-book-btn {
+            .court-net::after {
+                content: "";
+                position: absolute;
+                left: 50%;
+                top: -6px;
+                width: 2px;
+                height: 15px;
+                background: rgba(255, 255, 255, 0.7);
+                transform: translateX(-50%);
+            }
+
+            .slot-booked .tennis-court {
+                background: linear-gradient(180deg, #5a3a3a 0%, #4a2a2a 100%);
+            }
+
+            .slot-booked .tennis-court::before,
+            .slot-booked .tennis-court::after,
+            .slot-booked .court-service-line-top,
+            .slot-booked .court-service-line-bottom,
+            .slot-booked .court-center-line,
+            .slot-booked .court-net {
+                opacity: 0.5;
+            }
+
+            .court-player {
+                position: absolute;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                background: #ffb6b0;
+                box-shadow: 0 0 6px rgba(255, 182, 176, 0.5);
+            }
+
+            .court-player.player-top {
+                top: 18%;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .court-player.player-bottom {
+                bottom: 18%;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .court-ball {
+                position: absolute;
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: #f2e8c9;
+                box-shadow: 0 0 3px rgba(242, 232, 201, 0.6);
+            }
+
+            .slot-actions {
+                width: 100%;
+            }
+
+            .slot-book-btn {
                 width: 100%;
                 background: #151922;
                 border: 1px solid #353c4d;
@@ -469,9 +617,16 @@
                 font-size: 0.76rem;
                 font-weight: 700;
                 cursor: pointer;
+                transition: all 0.15s ease;
             }
 
-            .stall-book-btn:disabled {
+            .slot-book-btn:hover:not(:disabled) {
+                background: var(--accent);
+                border-color: var(--accent);
+                color: #fff;
+            }
+
+            .slot-book-btn:disabled {
                 opacity: 0.45;
                 cursor: not-allowed;
             }
@@ -499,15 +654,15 @@
                 font-size: 0.82rem;
             }
 
-            .arrival-list,
-            .hold-list {
+            .booking-list,
+            .availability-list {
                 margin-top: 10px;
                 display: grid;
                 gap: 8px;
             }
 
-            .arrival-item,
-            .hold-item {
+            .booking-item,
+            .availability-item {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
@@ -518,37 +673,13 @@
                 background: #171b23;
             }
 
-            .hold-item {
-                display: block;
-            }
-
-            .hold-top {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-            }
-
-            .hold-title,
-            .arrival-title {
-                margin: 0;
-                font-size: 0.82rem;
-                font-weight: 700;
-            }
-
-            .hold-sub,
-            .arrival-sub {
-                margin: 2px 0 0;
-                font-size: 0.74rem;
-                color: var(--muted);
-            }
-
-            .arrival-left {
+            .booking-left {
                 display: flex;
                 align-items: center;
                 gap: 8px;
             }
 
-            .arrival-emoji {
+            .booking-emoji {
                 width: 26px;
                 height: 26px;
                 border-radius: 999px;
@@ -557,8 +688,22 @@
                 background: #232b38;
             }
 
-            .arrival-time,
-            .hold-time {
+            .booking-title,
+            .availability-title {
+                margin: 0;
+                font-size: 0.82rem;
+                font-weight: 700;
+            }
+
+            .booking-sub,
+            .availability-sub {
+                margin: 2px 0 0;
+                font-size: 0.74rem;
+                color: var(--muted);
+            }
+
+            .booking-time,
+            .availability-time {
                 font-size: 0.76rem;
                 font-weight: 700;
                 color: #bfd2ec;
@@ -622,6 +767,28 @@
                 background: #10141c;
             }
 
+            .modal-actions {
+                margin-top: 4px;
+                display: flex;
+                justify-content: flex-end;
+                gap: 8px;
+            }
+
+            .error-banner {
+                background: #3a1a1a;
+                border: 1px solid #5a2a2a;
+                color: #ffb6b0;
+                padding: 10px 12px;
+                border-radius: 8px;
+                font-size: 0.82rem;
+                margin-bottom: 10px;
+                display: none;
+            }
+
+            .error-banner.visible {
+                display: block;
+            }
+
             body[data-theme="light"] {
                 --bg: #f6f7fb;
                 --bg-soft: #ffffff;
@@ -660,30 +827,41 @@
             }
 
             body[data-theme="light"] .panel,
-            body[data-theme="light"] .station-overview,
+            body[data-theme="light"] .court-overview,
             body[data-theme="light"] .side-panel,
             body[data-theme="light"] .kpis article,
             body[data-theme="light"] .helper-card,
-            body[data-theme="light"] .station-meta > div,
+            body[data-theme="light"] .court-meta > div,
             body[data-theme="light"] .pulse-item,
             body[data-theme="light"] .legend,
-            body[data-theme="light"] .stall,
-            body[data-theme="light"] .arrival-item,
-            body[data-theme="light"] .hold-item,
-            body[data-theme="light"] .stall-book-btn,
+            body[data-theme="light"] .slot,
+            body[data-theme="light"] .booking-item,
+            body[data-theme="light"] .availability-item,
+            body[data-theme="light"] .slot-book-btn,
             body[data-theme="light"] .booking-modal,
             body[data-theme="light"] .booking-form input,
             body[data-theme="light"] .booking-form select,
-            body[data-theme="light"] .btn-ghost {
+            body[data-theme="light"] .btn-ghost,
+            body[data-theme="light"] .court-tab {
                 border-color: #d7dce6;
                 background: #ffffff;
                 color: #232a38;
             }
 
+            body[data-theme="light"] .court-tab.active {
+                background: var(--accent);
+                border-color: var(--accent);
+                color: #fff;
+            }
+
+            body[data-theme="light"] .helper-card h3 {
+                color: #1c2433;
+            }
+
             body[data-theme="light"] .kpi-value,
             body[data-theme="light"] .meta-value,
-            body[data-theme="light"] .hold-time,
-            body[data-theme="light"] .arrival-time {
+            body[data-theme="light"] .booking-time,
+            body[data-theme="light"] .availability-time {
                 color: #1c2433;
             }
 
@@ -691,19 +869,36 @@
                 background: #f4f6fb;
             }
 
-            body[data-theme="light"] .stall-meter {
-                background: #e7eaf1;
-            }
-
-            body[data-theme="light"] .arrival-emoji {
+            body[data-theme="light"] .booking-emoji {
                 background: #eef1f8;
             }
 
-            .modal-actions {
-                margin-top: 4px;
-                display: flex;
-                justify-content: flex-end;
-                gap: 8px;
+            body[data-theme="light"] .error-banner {
+                background: #fce8e8;
+                border-color: #f5c2c2;
+                color: #842029;
+            }
+
+            body[data-theme="light"] .date-input {
+                border-color: #d4dbe7;
+                background: #ffffff;
+                color: #232a38;
+            }
+
+            body[data-theme="light"] .date-btn {
+                border-color: #d7dce6;
+                background: #ffffff;
+                color: #232a38;
+            }
+
+            body[data-theme="light"] .date-btn:hover {
+                background: #f4f6fb;
+            }
+
+            body[data-theme="light"] .date-btn.active {
+                background: var(--accent);
+                border-color: var(--accent);
+                color: #fff;
             }
 
             @keyframes pulse {
@@ -733,7 +928,7 @@
                     min-height: auto;
                 }
 
-                .stall-grid {
+                .slot-grid {
                     grid-template-columns: repeat(2, minmax(0, 1fr));
                 }
 
@@ -758,9 +953,9 @@
                 }
 
                 .kpis,
-                .station-meta,
+                .court-meta,
                 .pulse-row,
-                .stall-grid {
+                .slot-grid {
                     grid-template-columns: 1fr;
                 }
 
@@ -775,12 +970,12 @@
         <header class="site-header">
             <div class="brand">
                 <span class="brand-dot"></span>
-                <span>Tesla Supercharge Live Board</span>
+                <span id="location-name">Court Availability Board</span>
             </div>
             <div class="header-actions">
                 <div class="status-chip">
                     <span class="pulse"></span>
-                    Live view ready
+                    <span id="connection-status">Connecting...</span>
                 </div>
                 <button
                     id="theme-toggle"
@@ -797,10 +992,10 @@
             <section class="board-stage panel">
                 <div class="board-head">
                     <div>
-                        <p class="eyebrow">Live Supercharger Station</p>
-                        <h1>Live Stall Board</h1>
+                        <p class="eyebrow">Live Court Schedule</p>
+                        <h1>Court Board</h1>
                         <p class="lead">
-                            One look should tell drivers where to go now.
+                            Check availability and book courts in real-time.
                         </p>
                         <div class="hero-actions">
                             <button
@@ -808,71 +1003,96 @@
                                 class="btn btn-primary"
                                 type="button"
                             >
-                                Book A Stall
+                                Book a Court
                             </button>
                             <button
-                                id="book-best"
+                                id="refresh-data"
                                 class="btn btn-ghost"
                                 type="button"
                             >
-                                Auto Pick Best
+                                Refresh
                             </button>
                         </div>
                     </div>
                     <div class="kpis">
                         <article>
                             <p class="kpi-value" id="kpi-total">0</p>
-                            <p class="kpi-label">Total stalls</p>
+                            <p class="kpi-label">Total courts</p>
                         </article>
                         <article>
                             <p class="kpi-value" id="kpi-open">0</p>
-                            <p class="kpi-label">Available</p>
+                            <p class="kpi-label">Available now</p>
                         </article>
                         <article>
                             <p class="kpi-value" id="kpi-busy">0</p>
-                            <p class="kpi-label">Busy or slow</p>
+                            <p class="kpi-label">Booked today</p>
                         </article>
                     </div>
                 </div>
 
-                <div class="helper-strip" aria-label="How to read this board">
+                <div class="helper-strip" aria-label="How to use this board">
                     <article class="helper-card">
-                        <h3>1) Pick a green stall</h3>
+                        <h3>1) Select a court</h3>
                         <p>
-                            Green means open now. Tap
-                            <strong>Reserve This Stall</strong> to hold it.
+                            Choose a court from the tabs above the schedule to
+                            view its availability.
                         </p>
                     </article>
                     <article class="helper-card">
-                        <h3>2) Watch your hold timer</h3>
+                        <h3>2) Book a slot</h3>
                         <p>
-                            Your reservation appears under
-                            <strong>Active Holds</strong> with a countdown.
+                            Click <strong>Book a Court</strong> or select an
+                            available time slot to make a reservation.
                         </p>
                     </article>
                     <article class="helper-card">
-                        <h3>3) Plug in and start</h3>
+                        <h3>3) Manage bookings</h3>
                         <p>
-                            When you arrive, use <strong>Start</strong> so the
-                            stall moves into session mode.
+                            View your active bookings and cancel if plans
+                            change.
                         </p>
                     </article>
                 </div>
 
                 <div class="board-layout">
-                    <article class="station-overview">
-                        <div class="station-meta">
+                    <article class="court-overview">
+                        <div class="court-selector" id="court-selector"></div>
+
+                        <div class="date-bar" id="date-bar">
+                            <button class="date-btn active" data-offset="0">
+                                Today
+                            </button>
+                            <button class="date-btn" data-offset="1">
+                                Tomorrow
+                            </button>
+                            <button class="date-btn" data-offset="2">
+                                Next Day
+                            </button>
+                            <label class="date-picker-wrap">
+                                <input
+                                    id="view-date"
+                                    type="date"
+                                    class="date-input"
+                                />
+                            </label>
+                        </div>
+
+                        <div class="court-meta">
                             <div>
-                                <p class="meta-label">Station</p>
-                                <p class="meta-value">I-95 South / Newark</p>
+                                <p class="meta-label">Selected court</p>
+                                <p class="meta-value" id="selected-court-name">
+                                    -
+                                </p>
                             </div>
                             <div>
-                                <p class="meta-label">Current load</p>
-                                <p class="meta-value" id="station-load">0%</p>
+                                <p class="meta-label">Capacity</p>
+                                <p class="meta-value" id="court-capacity">-</p>
                             </div>
                             <div>
-                                <p class="meta-label">Cars arriving soon</p>
-                                <p class="meta-value" id="arrival-count">0</p>
+                                <p class="meta-label">Timezone</p>
+                                <p class="meta-value" id="location-timezone">
+                                    -
+                                </p>
                             </div>
                         </div>
 
@@ -880,42 +1100,44 @@
                             <span class="legend legend-available"
                                 >Available</span
                             >
-                            <span class="legend legend-occupied">Charging</span>
-                            <span class="legend legend-degraded"
-                                >Slower speed</span
-                            >
-                            <span class="legend legend-offline">Offline</span>
-                            <span class="legend legend-held">Reserved</span>
-                            <span class="legend legend-starting">Starting</span>
+                            <span class="legend legend-booked">Booked</span>
+                            <span class="legend legend-closed">Closed</span>
                         </div>
 
                         <div
-                            id="stall-grid"
-                            class="stall-grid"
+                            id="slot-grid"
+                            class="slot-grid"
                             aria-live="polite"
-                        ></div>
+                        >
+                            <p style="color: var(--muted); font-size: 0.9rem">
+                                Loading courts...
+                            </p>
+                        </div>
                     </article>
 
                     <aside class="side-column">
                         <article class="panel side-panel compact-panel">
                             <div class="section-title-wrap">
-                                <h2>Active Holds</h2>
-                                <p>Reserved but not plugged in yet.</p>
+                                <h2 id="bookings-heading">Bookings</h2>
+                                <p>Active reservations for selected court.</p>
                             </div>
-                            <div id="hold-list" class="hold-list"></div>
+                            <div id="booking-list" class="booking-list"></div>
                         </article>
 
                         <article class="panel side-panel">
                             <div class="section-title-wrap">
-                                <h2>Arrivals</h2>
-                                <p>Cars on the way.</p>
+                                <h2>Available Slots</h2>
+                                <p>Free time windows for booking.</p>
                             </div>
-                            <div id="arrival-list" class="arrival-list"></div>
+                            <div
+                                id="availability-list"
+                                class="availability-list"
+                            ></div>
                         </article>
 
                         <article class="panel side-panel compact-panel">
                             <div class="section-title-wrap">
-                                <h2>Station Pulse</h2>
+                                <h2>Court Pulse</h2>
                                 <p>Quick count by status.</p>
                             </div>
                             <div class="pulse-row">
@@ -926,22 +1148,20 @@
                                     </p>
                                 </div>
                                 <div class="pulse-item">
-                                    <p class="meta-label">Charging</p>
-                                    <p class="meta-value" id="pulse-occupied">
+                                    <p class="meta-label">Booked</p>
+                                    <p class="meta-value" id="pulse-booked">
                                         0
                                     </p>
                                 </div>
                                 <div class="pulse-item">
-                                    <p class="meta-label">Slower</p>
-                                    <p class="meta-value" id="pulse-degraded">
+                                    <p class="meta-label">Closed</p>
+                                    <p class="meta-value" id="pulse-closed">
                                         0
                                     </p>
                                 </div>
                                 <div class="pulse-item">
-                                    <p class="meta-label">Offline</p>
-                                    <p class="meta-value" id="pulse-offline">
-                                        0
-                                    </p>
+                                    <p class="meta-label">Total</p>
+                                    <p class="meta-value" id="pulse-total">0</p>
                                 </div>
                             </div>
                         </article>
@@ -952,44 +1172,54 @@
 
         <dialog id="booking-modal" class="booking-modal">
             <form id="booking-form" class="booking-form" method="dialog">
-                <h2>Create Stall Hold</h2>
-                <p>Reserve a charger with a short claim window.</p>
+                <h2>Book a Court</h2>
+                <p>Reserve a court for your session.</p>
+
+                <div id="error-banner" class="error-banner" role="alert"></div>
 
                 <label>
-                    Driver name
+                    Your name
                     <input
-                        id="driver-name"
-                        name="driverName"
+                        id="guest-name"
+                        name="guestName"
                         type="text"
                         required
-                        placeholder="Alex"
+                        placeholder="John Doe"
                     />
                 </label>
 
                 <label>
-                    Stall preference
-                    <select id="stall-choice" name="stallChoice">
-                        <option value="auto">Auto pick best available</option>
-                    </select>
+                    Court
+                    <select id="court-choice" name="courtChoice"></select>
                 </label>
 
                 <label>
-                    ETA to station
-                    <select id="eta-choice" name="eta">
-                        <option value="5">5 min</option>
-                        <option value="10" selected>10 min</option>
-                        <option value="15">15 min</option>
-                        <option value="20">20 min</option>
-                    </select>
+                    Date
+                    <input
+                        id="booking-date"
+                        name="bookingDate"
+                        type="date"
+                        required
+                    />
                 </label>
 
                 <label>
-                    Charge to
-                    <select id="soc-choice" name="targetSoc">
-                        <option value="70">70%</option>
-                        <option value="80" selected>80%</option>
-                        <option value="90">90%</option>
-                        <option value="100">100% (longer stop)</option>
+                    Start time
+                    <input
+                        id="booking-time"
+                        name="bookingTime"
+                        type="time"
+                        required
+                    />
+                </label>
+
+                <label>
+                    Duration
+                    <select id="duration-choice" name="durationMinutes">
+                        <option value="30">30 minutes</option>
+                        <option value="60" selected>1 hour</option>
+                        <option value="90">1.5 hours</option>
+                        <option value="120">2 hours</option>
                     </select>
                 </label>
 
@@ -1002,134 +1232,48 @@
                         Cancel
                     </button>
                     <button class="btn btn-primary" type="submit">
-                        Reserve Stall
+                        Book Court
                     </button>
                 </div>
             </form>
         </dialog>
 
         <script>
-            const stalls = [
-                {
-                    id: "1A",
-                    state: "occupied",
-                    note: "About 22 min left",
-                    soc: 61,
-                    speed: "198 kW",
-                },
-                {
-                    id: "1B",
-                    state: "degraded",
-                    note: "Reduced speed",
-                    soc: 34,
-                    speed: "92 kW",
-                },
-                {
-                    id: "2A",
-                    state: "available",
-                    note: "Ready now",
-                    soc: 0,
-                    speed: "250 kW",
-                },
-                {
-                    id: "2B",
-                    state: "available",
-                    note: "Ready now",
-                    soc: 0,
-                    speed: "250 kW",
-                },
-                {
-                    id: "3A",
-                    state: "occupied",
-                    note: "About 10 min left",
-                    soc: 73,
-                    speed: "121 kW",
-                },
-                {
-                    id: "3B",
-                    state: "degraded",
-                    note: "Reduced speed",
-                    soc: 46,
-                    speed: "88 kW",
-                },
-                {
-                    id: "4A",
-                    state: "offline",
-                    note: "Temporarily offline",
-                    soc: 0,
-                    speed: "-",
-                },
-                {
-                    id: "4B",
-                    state: "available",
-                    note: "Ready now",
-                    soc: 0,
-                    speed: "250 kW",
-                },
-            ];
+            const API_BASE = "/api/v1";
 
-            const arrivals = [
-                {
-                    car: "Model Y",
-                    eta: "6 min",
-                    need: "Quick top-up",
-                    emoji: "🚗",
-                },
-                {
-                    car: "Model 3",
-                    eta: "11 min",
-                    need: "Standard charge",
-                    emoji: "🚙",
-                },
-                {
-                    car: "Model S",
-                    eta: "18 min",
-                    need: "Short stop",
-                    emoji: "🚘",
-                },
-            ];
+            let locationData = null;
+            let courts = [];
+            let selectedCourtId = null;
+            let selectedDate = new Date();
+            let bookings = [];
+            let availabilitySlots = [];
 
-            const holds = [];
-
-            const stateText = {
-                available: "Available",
-                occupied: "Charging",
-                degraded: "Slower",
-                offline: "Offline",
-                held: "Reserved",
-                starting: "Starting",
-            };
-
-            const barPercentByState = {
-                available: 100,
-                occupied: 80,
-                degraded: 42,
-                offline: 0,
-                held: 58,
-                starting: 90,
-            };
-
-            const stallGrid = document.getElementById("stall-grid");
-            const arrivalList = document.getElementById("arrival-list");
-            const holdList = document.getElementById("hold-list");
+            const slotGrid = document.getElementById("slot-grid");
+            const bookingList = document.getElementById("booking-list");
+            const availabilityList =
+                document.getElementById("availability-list");
+            const courtSelector = document.getElementById("court-selector");
             const bookingModal = document.getElementById("booking-modal");
             const bookingForm = document.getElementById("booking-form");
-            const stallChoice = document.getElementById("stall-choice");
-            const driverName = document.getElementById("driver-name");
-            const etaChoice = document.getElementById("eta-choice");
-            const socChoice = document.getElementById("soc-choice");
+            const courtChoice = document.getElementById("court-choice");
+            const guestName = document.getElementById("guest-name");
+            const bookingDate = document.getElementById("booking-date");
+            const bookingTime = document.getElementById("booking-time");
+            const durationChoice = document.getElementById("duration-choice");
             const themeToggle = document.getElementById("theme-toggle");
+            const errorBanner = document.getElementById("error-banner");
+            const connectionStatus =
+                document.getElementById("connection-status");
+            const viewDateInput = document.getElementById("view-date");
+            const dateBar = document.getElementById("date-bar");
 
-            const THEME_KEY = "supercharge_theme";
-
-            const bookableStates = new Set(["available", "degraded"]);
+            const THEME_KEY = "court_board_theme";
 
             function getInitialTheme() {
                 const saved = localStorage.getItem(THEME_KEY);
                 if (saved === "light" || saved === "dark") {
                     return saved;
                 }
-
                 return window.matchMedia("(prefers-color-scheme: light)")
                     .matches
                     ? "light"
@@ -1143,292 +1287,503 @@
                 localStorage.setItem(THEME_KEY, theme);
             }
 
-            function getBookableStalls() {
-                return stalls.filter((stall) =>
-                    bookableStates.has(stall.state),
-                );
+            function showError(message) {
+                errorBanner.textContent = message;
+                errorBanner.classList.add("visible");
+                setTimeout(() => {
+                    errorBanner.classList.remove("visible");
+                }, 5000);
             }
 
-            function parseSpeed(stall) {
-                const value = Number.parseInt(stall.speed, 10);
-                return Number.isNaN(value) ? 0 : value;
+            function setStatus(connected) {
+                connectionStatus.textContent = connected ? "Live" : "Offline";
+                connectionStatus.style.color = connected
+                    ? "var(--ok)"
+                    : "var(--warn)";
             }
 
-            function pickBestStall() {
-                const bookable = getBookableStalls();
-                if (!bookable.length) {
-                    return null;
-                }
+            async function fetchLocation() {
+                try {
+                    const res = await fetch(`${API_BASE}/default-location`);
+                    if (!res.ok) throw new Error("Failed to load location");
+                    locationData = await res.json();
+                    courts = locationData.courts || [];
+                    selectedCourtId = courts[0]?.id || null;
 
-                const available = bookable.filter(
-                    (stall) => stall.state === "available",
-                );
-                const source = available.length ? available : bookable;
+                    document.getElementById("location-name").textContent =
+                        locationData.name || "Court Availability Board";
+                    document.getElementById("location-timezone").textContent =
+                        locationData.timezone || "-";
 
-                return source.sort((a, b) => parseSpeed(b) - parseSpeed(a))[0];
-            }
+                    renderCourtSelector();
+                    renderCourtChoice();
+                    updateDateButtons();
 
-            function formatCountdown(timestamp) {
-                const delta = Math.max(0, timestamp - Date.now());
-                const minutes = Math.floor(delta / 60000);
-                const seconds = Math.floor((delta % 60000) / 1000);
-                return `${minutes}:${String(seconds).padStart(2, "0")}`;
-            }
+                    if (selectedCourtId) {
+                        await loadCourtData(selectedCourtId);
+                    }
 
-            function populateStallChoice(selectedId = "auto") {
-                const bookable = getBookableStalls();
-
-                stallChoice.innerHTML = [
-                    '<option value="auto">Auto pick best available</option>',
-                    ...bookable.map(
-                        (stall) =>
-                            `<option value="${stall.id}">${stall.id} - ${stateText[stall.state]} (${stall.speed})</option>`,
-                    ),
-                ].join("");
-
-                if (
-                    selectedId !== "auto" &&
-                    bookable.some((stall) => stall.id === selectedId)
-                ) {
-                    stallChoice.value = selectedId;
+                    setStatus(true);
+                } catch (err) {
+                    console.error("Failed to load location:", err);
+                    setStatus(false);
+                    slotGrid.innerHTML =
+                        '<p style="color: var(--muted);">Unable to load courts. Please refresh.</p>';
                 }
             }
 
-            function openBookingModal(preferredStallId = "auto") {
-                populateStallChoice(preferredStallId);
+            async function loadCourtData(courtId) {
+                selectedCourtId = courtId;
+                renderCourtSelector();
+
+                const court = courts.find((c) => c.id === courtId);
+                if (court) {
+                    document.getElementById("selected-court-name").textContent =
+                        court.name;
+                    document.getElementById("court-capacity").textContent =
+                        String(court.capacity);
+                }
+
+                await Promise.all([
+                    fetchBookings(courtId),
+                    fetchAvailability(courtId),
+                ]);
+
+                render();
+            }
+
+            async function fetchBookings(courtId) {
+                try {
+                    const res = await fetch(
+                        `${API_BASE}/courts/${courtId}/bookings`,
+                    );
+                    if (!res.ok) throw new Error("Failed to load bookings");
+                    bookings = await res.json();
+                } catch (err) {
+                    console.error("Failed to load bookings:", err);
+                    bookings = [];
+                }
+            }
+
+            async function fetchAvailability(courtId) {
+                try {
+                    const from = new Date(selectedDate);
+                    from.setHours(0, 0, 0, 0);
+                    const to = new Date(selectedDate);
+                    to.setHours(23, 59, 59, 999);
+
+                    const params = new URLSearchParams({
+                        from: from.toISOString(),
+                        to: to.toISOString(),
+                        duration_minutes: "30",
+                    });
+
+                    const res = await fetch(
+                        `${API_BASE}/courts/${courtId}/availability?${params}`,
+                    );
+                    if (!res.ok) throw new Error("Failed to load availability");
+                    availabilitySlots = await res.json();
+                } catch (err) {
+                    console.error("Failed to load availability:", err);
+                    availabilitySlots = [];
+                }
+            }
+
+            async function createBooking(input) {
+                try {
+                    const res = await fetch(
+                        `${API_BASE}/courts/${input.courtId}/bookings`,
+                        {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                startTime: input.startTime,
+                                durationMinutes: input.durationMinutes,
+                                guestName: input.guestName,
+                            }),
+                        },
+                    );
+
+                    if (!res.ok) {
+                        const data = await res.json().catch(() => ({}));
+                        throw new Error(
+                            data.error || `Booking failed (${res.status})`,
+                        );
+                    }
+
+                    return await res.json();
+                } catch (err) {
+                    throw err;
+                }
+            }
+
+            async function cancelBooking(bookingId) {
+                try {
+                    const res = await fetch(
+                        `${API_BASE}/bookings/${bookingId}/cancel`,
+                        {
+                            method: "PATCH",
+                        },
+                    );
+
+                    if (!res.ok) {
+                        const data = await res.json().catch(() => ({}));
+                        throw new Error(
+                            data.error || `Cancel failed (${res.status})`,
+                        );
+                    }
+
+                    return true;
+                } catch (err) {
+                    throw err;
+                }
+            }
+
+            function renderCourtSelector() {
+                courtSelector.innerHTML = courts
+                    .map(
+                        (court) =>
+                            `<button class="court-tab ${court.id === selectedCourtId ? "active" : ""}" data-court-id="${court.id}">${court.name}</button>`,
+                    )
+                    .join("");
+            }
+
+            function renderCourtChoice() {
+                courtChoice.innerHTML = courts
+                    .map(
+                        (court) =>
+                            `<option value="${court.id}">${court.name}</option>`,
+                    )
+                    .join("");
+
+                if (selectedCourtId) {
+                    courtChoice.value = selectedCourtId;
+                }
+            }
+
+            function formatTime(isoString) {
+                const d = new Date(isoString);
+                return d.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                });
+            }
+
+            function formatDateTime(isoString) {
+                const d = new Date(isoString);
+                return d.toLocaleString([], {
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                });
+            }
+
+            function isToday(isoString) {
+                const d = new Date(isoString);
+                const today = new Date();
+                return (
+                    d.getDate() === today.getDate() &&
+                    d.getMonth() === today.getMonth() &&
+                    d.getFullYear() === today.getFullYear()
+                );
+            }
+
+            function isSameDay(isoString, date) {
+                const d = new Date(isoString);
+                return (
+                    d.getDate() === date.getDate() &&
+                    d.getMonth() === date.getMonth() &&
+                    d.getFullYear() === date.getFullYear()
+                );
+            }
+
+            function formatDateInput(date) {
+                return date.toISOString().split("T")[0];
+            }
+
+            function formatDateLabel(date) {
+                const today = new Date();
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+
+                if (isSameDay(date.toISOString(), today)) return "Today";
+                if (isSameDay(date.toISOString(), tomorrow)) return "Tomorrow";
+
+                return date.toLocaleDateString([], {
+                    weekday: "short",
+                    month: "short",
+                    day: "numeric",
+                });
+            }
+
+            function renderKPIs() {
+                const total = courts.length;
+                const dateBookings = bookings.filter((b) =>
+                    isSameDay(b.startTime, selectedDate),
+                ).length;
+                const available = Math.max(0, total - dateBookings);
+
+                document.getElementById("kpi-total").textContent =
+                    String(total);
+                document.getElementById("kpi-open").textContent =
+                    String(available);
+                document.getElementById("kpi-busy").textContent =
+                    String(dateBookings);
+
+                document.getElementById("pulse-available").textContent =
+                    String(available);
+                document.getElementById("pulse-booked").textContent =
+                    String(dateBookings);
+                document.getElementById("pulse-closed").textContent = "0";
+                document.getElementById("pulse-total").textContent =
+                    String(total);
+            }
+
+            function getDayHours(date) {
+                if (!locationData || !locationData.hours) return null;
+                const weekdays = [
+                    "Sunday",
+                    "Monday",
+                    "Tuesday",
+                    "Wednesday",
+                    "Thursday",
+                    "Friday",
+                    "Saturday",
+                ];
+                const dayName = weekdays[date.getDay()];
+                return locationData.hours[dayName] || [];
+            }
+
+            function isSlotInException(slotStart, slotEnd) {
+                if (!locationData || !locationData.exceptions) return false;
+                return locationData.exceptions.some((exc) => {
+                    const excStart = new Date(exc.start);
+                    const excEnd = new Date(exc.end);
+                    return slotStart < excEnd && slotEnd > excStart;
+                });
+            }
+
+            function getExceptionForSlot(slotStart, slotEnd) {
+                if (!locationData || !locationData.exceptions) return null;
+                return locationData.exceptions.find((exc) => {
+                    const excStart = new Date(exc.start);
+                    const excEnd = new Date(exc.end);
+                    return slotStart < excEnd && slotEnd > excStart;
+                });
+            }
+
+            function parseTimeStr(timeStr) {
+                const [h, m] = timeStr.split(":").map(Number);
+                return { h, m };
+            }
+
+            function renderSlots() {
+                if (!selectedCourtId) {
+                    slotGrid.innerHTML =
+                        '<p style="color: var(--muted);">No court selected</p>';
+                    return;
+                }
+
+                const viewDate = new Date(selectedDate);
+                const dayHours = getDayHours(viewDate);
+                const slots = [];
+                const dateLabel = formatDateLabel(viewDate);
+
+                if (!dayHours || dayHours.length === 0) {
+                    slotGrid.innerHTML = `<p style="color: var(--muted); text-align: center; padding: 40px;">Courts are closed ${dateLabel}.</p>`;
+                    return;
+                }
+
+                for (const range of dayHours) {
+                    const open = parseTimeStr(range.open);
+                    const close = parseTimeStr(range.close);
+
+                    for (let hour = open.h; hour < close.h; hour++) {
+                        for (let min = 0; min < 60; min += 30) {
+                            if (hour === open.h && min < open.m) continue;
+                            if (hour === close.h - 1 && min >= close.m)
+                                continue;
+
+                            const slotStart = new Date(viewDate);
+                            slotStart.setHours(hour, min, 0, 0);
+
+                            const slotEnd = new Date(slotStart);
+                            slotEnd.setMinutes(slotEnd.getMinutes() + 30);
+
+                            const isException = isSlotInException(
+                                slotStart,
+                                slotEnd,
+                            );
+                            const booked =
+                                !isException &&
+                                bookings.some((b) => {
+                                    const bStart = new Date(b.startTime);
+                                    const bEnd = new Date(b.endTime);
+                                    return slotStart < bEnd && slotEnd > bStart;
+                                });
+
+                            slots.push({
+                                start: slotStart,
+                                end: slotEnd,
+                                booked,
+                                isException,
+                                label: `${String(hour).padStart(2, "0")}:${String(min).padStart(2, "0")}`,
+                            });
+                        }
+                    }
+                }
+
+                if (slots.length === 0) {
+                    slotGrid.innerHTML = `<p style="color: var(--muted); text-align: center; padding: 40px;">No available slots ${dateLabel}.</p>`;
+                    return;
+                }
+
+                slotGrid.innerHTML = slots
+                    .map((slot) => {
+                        let state = "available";
+                        let canBook = true;
+                        let playerDot = "";
+                        let closedOverlay = "";
+                        let statusLabel = "Available";
+                        let buttonText = "Book This Slot";
+
+                        if (slot.isException) {
+                            state = "closed";
+                            canBook = false;
+                            statusLabel = "Closed";
+                            buttonText = "Closed";
+                            closedOverlay =
+                                '<div class="court-closed-overlay">CLOSED</div>';
+                        } else if (slot.booked) {
+                            state = "booked";
+                            canBook = false;
+                            statusLabel = "Booked";
+                            buttonText = "Unavailable";
+                            playerDot =
+                                '<div class="court-player player-top"></div><div class="court-player player-bottom"></div>';
+                        }
+
+                        return `
+                            <article class="slot slot-${state}">
+                                <h3 class="slot-time">${slot.label}</h3>
+                                <div class="tennis-court">
+                                    <div class="court-service-line-top"></div>
+                                    <div class="court-service-line-bottom"></div>
+                                    <div class="court-center-line"></div>
+                                    <div class="court-net"></div>
+                                    ${playerDot}
+                                    ${closedOverlay}
+                                </div>
+                                <div class="slot-actions">
+                                    <button class="slot-book-btn" data-slot-start="${slot.start.toISOString()}" ${canBook ? "" : "disabled"}>
+                                        ${buttonText}
+                                    </button>
+                                </div>
+                            </article>
+                        `;
+                    })
+                    .join("");
+            }
+
+            function renderBookings() {
+                const dateBookings = bookings.filter((b) =>
+                    isSameDay(b.startTime, selectedDate),
+                );
+
+                const heading = document.getElementById("bookings-heading");
+                if (heading) {
+                    heading.textContent = `${formatDateLabel(selectedDate)} Bookings`;
+                }
+
+                if (!dateBookings.length) {
+                    const dateLabel =
+                        formatDateLabel(selectedDate).toLowerCase();
+                    bookingList.innerHTML = `<article class="booking-item"><div><p class="booking-title">No bookings ${dateLabel}</p><p class="booking-sub">Book a slot to get started.</p></div></article>`;
+                    return;
+                }
+
+                bookingList.innerHTML = dateBookings
+                    .map(
+                        (booking) => `
+                            <article class="booking-item">
+                                <div class="booking-left">
+                                    <div class="booking-emoji">🎾</div>
+                                    <div>
+                                        <p class="booking-title">${booking.guestName}</p>
+                                        <p class="booking-sub">${formatDateTime(booking.startTime)} - ${formatTime(booking.endTime)}</p>
+                                    </div>
+                                </div>
+                                <button class="btn btn-danger" data-booking-id="${booking.id}" data-action="cancel">Cancel</button>
+                            </article>
+                        `,
+                    )
+                    .join("");
+            }
+
+            function renderAvailability() {
+                if (!availabilitySlots.length) {
+                    availabilityList.innerHTML =
+                        '<article class="availability-item"><div><p class="availability-title">No slots available</p><p class="availability-sub">Try a different date or duration.</p></div></article>';
+                    return;
+                }
+
+                availabilityList.innerHTML = availabilitySlots
+                    .slice(0, 6)
+                    .map(
+                        (slot) => `
+                            <article class="availability-item">
+                                <div>
+                                    <p class="availability-title">${formatTime(slot.start)} - ${formatTime(slot.end)}</p>
+                                    <p class="availability-sub">Available window</p>
+                                </div>
+                                <button class="btn btn-primary" data-slot-start="${slot.start}" data-action="book-gap">Book</button>
+                            </article>
+                        `,
+                    )
+                    .join("");
+            }
+
+            function openBookingModal(preferredSlot = null) {
+                errorBanner.classList.remove("visible");
                 bookingModal.showModal();
-                driverName.focus();
+                guestName.focus();
+
+                bookingDate.value = formatDateInput(selectedDate);
+                bookingTime.value = "08:00";
+
+                if (preferredSlot) {
+                    const d = new Date(preferredSlot);
+                    bookingDate.value = d.toISOString().split("T")[0];
+                    bookingTime.value = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+                }
             }
 
             function closeBookingModal() {
                 bookingModal.close();
                 bookingForm.reset();
-                etaChoice.value = "10";
-                socChoice.value = "80";
-            }
-
-            function createHold({ driver, etaMinutes, targetSoc, stallId }) {
-                const chosenStall =
-                    stallId === "auto"
-                        ? pickBestStall()
-                        : stalls.find((stall) => stall.id === stallId);
-
-                if (!chosenStall || !bookableStates.has(chosenStall.state)) {
-                    return;
-                }
-
-                chosenStall.state = "held";
-                chosenStall.note = `${driver} arriving in ${etaMinutes} min`;
-
-                holds.unshift({
-                    id: `hold-${Date.now()}`,
-                    stallId: chosenStall.id,
-                    driver,
-                    etaMinutes,
-                    targetSoc,
-                    expiresAt: Date.now() + etaMinutes * 60000,
-                });
-
-                render();
-            }
-
-            function startSession(holdId) {
-                const index = holds.findIndex((hold) => hold.id === holdId);
-                if (index === -1) {
-                    return;
-                }
-
-                const hold = holds[index];
-                const stall = stalls.find((entry) => entry.id === hold.stallId);
-                if (stall) {
-                    stall.state = "starting";
-                    stall.note = `Plug in now - charging to ${hold.targetSoc}%`;
-                    stall.soc = 12;
-                }
-
-                holds.splice(index, 1);
-                render();
-            }
-
-            function releaseHold(holdId) {
-                const index = holds.findIndex((hold) => hold.id === holdId);
-                if (index === -1) {
-                    return;
-                }
-
-                const hold = holds[index];
-                const stall = stalls.find((entry) => entry.id === hold.stallId);
-                if (stall) {
-                    stall.state = "available";
-                    stall.note = "Ready now";
-                    stall.soc = 0;
-                    stall.speed = stall.speed === "-" ? "250 kW" : stall.speed;
-                }
-
-                holds.splice(index, 1);
-                render();
-            }
-
-            function renderKPIs() {
-                const counts = stalls.reduce(
-                    (acc, stall) => {
-                        acc[stall.state] = (acc[stall.state] || 0) + 1;
-                        return acc;
-                    },
-                    {
-                        available: 0,
-                        occupied: 0,
-                        degraded: 0,
-                        offline: 0,
-                        held: 0,
-                        starting: 0,
-                    },
-                );
-
-                const total = stalls.length;
-                const busy =
-                    counts.occupied +
-                    counts.degraded +
-                    counts.held +
-                    counts.starting;
-                const load = Math.round((busy / total) * 100);
-
-                document.getElementById("kpi-total").textContent =
-                    String(total);
-                document.getElementById("kpi-open").textContent = String(
-                    counts.available,
-                );
-                document.getElementById("kpi-busy").textContent = String(busy);
-                document.getElementById("pulse-available").textContent = String(
-                    counts.available,
-                );
-                document.getElementById("pulse-occupied").textContent = String(
-                    counts.occupied + counts.starting,
-                );
-                document.getElementById("pulse-degraded").textContent = String(
-                    counts.degraded + counts.held,
-                );
-                document.getElementById("pulse-offline").textContent = String(
-                    counts.offline,
-                );
-                document.getElementById("station-load").textContent =
-                    `${load}%`;
-                document.getElementById("arrival-count").textContent = String(
-                    arrivals.length + holds.length,
-                );
-            }
-
-            function renderStalls() {
-                stallGrid.innerHTML = stalls
-                    .map((stall) => {
-                        const canBook = bookableStates.has(stall.state);
-
-                        return `
-                  <article class="stall state-${stall.state}">
-                    <div class="stall-top">
-                      <h3>Stall ${stall.id}</h3>
-                      <span class="stall-icon state-${stall.state}"></span>
-                    </div>
-                    <p>${stall.note}</p>
-                    <div class="stall-meta-row">
-                      <span>Battery ${stall.soc}%</span>
-                      <span>${stall.speed}</span>
-                    </div>
-                    <div class="stall-meter">
-                      <span style="width: ${barPercentByState[stall.state] || 0}%"></span>
-                    </div>
-                    <span class="pill pill-${stall.state}">${stateText[stall.state]}</span>
-                    <div class="stall-actions">
-                      <button class="stall-book-btn" data-stall-id="${stall.id}" ${canBook ? "" : "disabled"}>Reserve This Stall</button>
-                    </div>
-                  </article>
-                `;
-                    })
-                    .join("");
-            }
-
-            function renderArrivals() {
-                const mergedArrivals = [
-                    ...arrivals,
-                    ...holds.map((hold) => ({
-                        car: hold.driver,
-                        eta: `${hold.etaMinutes} min`,
-                        need: `Heading to ${hold.stallId}`,
-                        emoji: "🧭",
-                    })),
-                ];
-
-                arrivalList.innerHTML = mergedArrivals
-                    .map(
-                        (arrival) => `
-                  <article class="arrival-item">
-                    <div class="arrival-left">
-                      <div class="arrival-emoji">${arrival.emoji}</div>
-                      <div>
-                        <p class="arrival-title">${arrival.car}</p>
-                        <p class="arrival-sub">${arrival.need}</p>
-                      </div>
-                    </div>
-                    <span class="arrival-time">ETA ${arrival.eta}</span>
-                  </article>
-                `,
-                    )
-                    .join("");
-            }
-
-            function renderHolds() {
-                if (!holds.length) {
-                    holdList.innerHTML =
-                        '<article class="hold-item"><p class="hold-title">No active holds</p><p class="hold-sub">New reservations will appear here.</p></article>';
-                    return;
-                }
-
-                holdList.innerHTML = holds
-                    .map(
-                        (hold) => `
-                  <article class="hold-item">
-                    <div class="hold-top">
-                      <p class="hold-title">${hold.driver} -> Stall ${hold.stallId}</p>
-                      <span class="hold-time">${formatCountdown(hold.expiresAt)}</span>
-                    </div>
-                    <p class="hold-sub">Charge to ${hold.targetSoc}%</p>
-                    <div class="hero-actions">
-                      <button class="stall-book-btn" data-action="start" data-hold-id="${hold.id}">Start</button>
-                      <button class="stall-book-btn" data-action="release" data-hold-id="${hold.id}">Release</button>
-                    </div>
-                  </article>
-                `,
-                    )
-                    .join("");
+                errorBanner.classList.remove("visible");
             }
 
             function render() {
                 renderKPIs();
-                renderStalls();
-                renderArrivals();
-                renderHolds();
+                renderSlots();
+                renderBookings();
+                renderAvailability();
             }
 
             document
                 .getElementById("open-booking")
                 .addEventListener("click", () => {
-                    openBookingModal("auto");
+                    openBookingModal();
                 });
 
             document
-                .getElementById("book-best")
+                .getElementById("refresh-data")
                 .addEventListener("click", () => {
-                    const best = pickBestStall();
-                    if (!best) {
-                        return;
+                    if (selectedCourtId) {
+                        loadCourtData(selectedCourtId);
                     }
-
-                    createHold({
-                        driver: "Guest driver",
-                        etaMinutes: 10,
-                        targetSoc: 80,
-                        stallId: best.id,
-                    });
                 });
 
             document
@@ -1437,53 +1792,182 @@
                     closeBookingModal();
                 });
 
-            bookingForm.addEventListener("submit", (event) => {
+            bookingForm.addEventListener("submit", async (event) => {
                 event.preventDefault();
+                errorBanner.classList.remove("visible");
 
-                createHold({
-                    driver: driverName.value.trim() || "Guest driver",
-                    etaMinutes: Number(etaChoice.value),
-                    targetSoc: Number(socChoice.value),
-                    stallId: stallChoice.value,
+                const date = bookingDate.value;
+                const time = bookingTime.value;
+                if (!date || !time) {
+                    showError("Please select a date and time");
+                    return;
+                }
+
+                const startTime = new Date(`${date}T${time}`);
+                const durationMinutes = Number(durationChoice.value);
+                const endTime = new Date(
+                    startTime.getTime() + durationMinutes * 60000,
+                );
+
+                const slotDayHours = getDayHours(startTime);
+                if (!slotDayHours || slotDayHours.length === 0) {
+                    showError("Courts are closed on this day");
+                    return;
+                }
+
+                const startMinutes =
+                    startTime.getHours() * 60 + startTime.getMinutes();
+                const endMinutes =
+                    endTime.getHours() * 60 + endTime.getMinutes();
+                const withinHours = slotDayHours.some((range) => {
+                    const open = parseTimeStr(range.open);
+                    const close = parseTimeStr(range.close);
+                    const openMinutes = open.h * 60 + open.m;
+                    const closeMinutes = close.h * 60 + close.m;
+                    return (
+                        startMinutes >= openMinutes &&
+                        endMinutes <= closeMinutes
+                    );
                 });
 
-                closeBookingModal();
+                if (!withinHours) {
+                    showError("Selected time is outside operating hours");
+                    return;
+                }
+
+                const exception = getExceptionForSlot(startTime, endTime);
+                if (exception) {
+                    showError(`Court closed: ${exception.reason}`);
+                    return;
+                }
+
+                try {
+                    await createBooking({
+                        courtId: courtChoice.value,
+                        startTime: startTime.toISOString(),
+                        durationMinutes: durationMinutes,
+                        guestName: guestName.value.trim() || "Guest",
+                    });
+
+                    closeBookingModal();
+                    await loadCourtData(selectedCourtId);
+                } catch (err) {
+                    showError(err.message);
+                }
             });
 
-            stallGrid.addEventListener("click", (event) => {
+            slotGrid.addEventListener("click", (event) => {
                 const target = event.target;
                 if (!(target instanceof HTMLButtonElement)) {
                     return;
                 }
 
-                const stallId = target.dataset.stallId;
-                if (!stallId) {
+                const slotStart = target.dataset.slotStart;
+                if (!slotStart) {
                     return;
                 }
 
-                openBookingModal(stallId);
+                openBookingModal(slotStart);
             });
 
-            holdList.addEventListener("click", (event) => {
+            courtSelector.addEventListener("click", (event) => {
                 const target = event.target;
                 if (!(target instanceof HTMLButtonElement)) {
                     return;
                 }
 
-                const holdId = target.dataset.holdId;
+                const courtId = target.dataset.courtId;
+                if (!courtId) {
+                    return;
+                }
+
+                loadCourtData(courtId);
+            });
+
+            bookingList.addEventListener("click", async (event) => {
+                const target = event.target;
+                if (!(target instanceof HTMLButtonElement)) {
+                    return;
+                }
+
+                const bookingId = target.dataset.bookingId;
                 const action = target.dataset.action;
 
-                if (!holdId || !action) {
+                if (!bookingId || action !== "cancel") {
                     return;
                 }
 
-                if (action === "start") {
-                    startSession(holdId);
+                try {
+                    await cancelBooking(bookingId);
+                    await loadCourtData(selectedCourtId);
+                } catch (err) {
+                    showError(err.message);
+                }
+            });
+
+            availabilityList.addEventListener("click", (event) => {
+                const target = event.target;
+                if (!(target instanceof HTMLButtonElement)) {
                     return;
                 }
 
-                if (action === "release") {
-                    releaseHold(holdId);
+                const slotStart = target.dataset.slotStart;
+                const action = target.dataset.action;
+
+                if (!slotStart || action !== "book-gap") {
+                    return;
+                }
+
+                openBookingModal(slotStart);
+            });
+
+            function updateDateButtons() {
+                const btns = dateBar.querySelectorAll(".date-btn");
+                btns.forEach((btn) => btn.classList.remove("active"));
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const sel = new Date(selectedDate);
+                sel.setHours(0, 0, 0, 0);
+                const diffDays = Math.round((sel - today) / 86400000);
+
+                const match = dateBar.querySelector(
+                    `[data-offset="${diffDays}"]`,
+                );
+                if (match) {
+                    match.classList.add("active");
+                    viewDateInput.value = "";
+                } else {
+                    viewDateInput.value = formatDateInput(selectedDate);
+                }
+            }
+
+            dateBar.addEventListener("click", (event) => {
+                const target = event.target;
+                if (!target.classList.contains("date-btn")) {
+                    return;
+                }
+
+                const offset = Number(target.dataset.offset);
+                const base = new Date();
+                base.setHours(0, 0, 0, 0);
+                base.setDate(base.getDate() + offset);
+                selectedDate = base;
+
+                updateDateButtons();
+
+                if (selectedCourtId) {
+                    loadCourtData(selectedCourtId);
+                }
+            });
+
+            viewDateInput.addEventListener("change", (event) => {
+                const value = event.target.value;
+                if (!value) return;
+                selectedDate = new Date(value + "T00:00:00");
+                updateDateButtons();
+                if (selectedCourtId) {
+                    loadCourtData(selectedCourtId);
                 }
             });
 
@@ -1493,19 +1977,8 @@
                 setTheme(next);
             });
 
-            setInterval(() => {
-                for (let index = holds.length - 1; index >= 0; index -= 1) {
-                    const hold = holds[index];
-                    if (hold.expiresAt <= Date.now()) {
-                        releaseHold(hold.id);
-                    }
-                }
-
-                renderHolds();
-            }, 1000);
-
             setTheme(getInitialTheme());
-            render();
+            fetchLocation();
         </script>
     </body>
 </html>
